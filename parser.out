@@ -1,0 +1,342 @@
+Created by PLY version 3.7 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> statement
+Rule 1     statement -> CONTRADICTION
+Rule 2     statement -> expression
+Rule 3     expression -> binary IMPLICATION expression
+Rule 4     expression -> binary IMPLICATION CONTRADICTION
+Rule 5     expression -> binary BICONDITIONAL expression
+Rule 6     expression -> binary
+Rule 7     binary -> unary OR binary
+Rule 8     binary -> unary AND binary
+Rule 9     binary -> unary
+Rule 10    unary -> NOT unary
+Rule 11    unary -> root
+Rule 12    root -> LPAREN expression RPAREN
+Rule 13    root -> ID
+
+Terminals, with rules where they appear
+
+AND                  : 8
+BICONDITIONAL        : 5
+CONTRADICTION        : 1 4
+ID                   : 13
+IMPLICATION          : 3 4
+LPAREN               : 12
+NOT                  : 10
+OR                   : 7
+RPAREN               : 12
+error                : 
+
+Nonterminals, with rules where they appear
+
+binary               : 3 4 5 6 7 8
+expression           : 2 3 5 12
+root                 : 11
+statement            : 0
+unary                : 7 8 9 10
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . statement
+    (1) statement -> . CONTRADICTION
+    (2) statement -> . expression
+    (3) expression -> . binary IMPLICATION expression
+    (4) expression -> . binary IMPLICATION CONTRADICTION
+    (5) expression -> . binary BICONDITIONAL expression
+    (6) expression -> . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    CONTRADICTION   shift and go to state 4
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 1
+    expression                     shift and go to state 9
+    statement                      shift and go to state 7
+    root                           shift and go to state 3
+
+state 1
+
+    (3) expression -> binary . IMPLICATION expression
+    (4) expression -> binary . IMPLICATION CONTRADICTION
+    (5) expression -> binary . BICONDITIONAL expression
+    (6) expression -> binary .
+
+    IMPLICATION     shift and go to state 11
+    BICONDITIONAL   shift and go to state 10
+    RPAREN          reduce using rule 6 (expression -> binary .)
+    $end            reduce using rule 6 (expression -> binary .)
+
+
+state 2
+
+    (12) root -> LPAREN . expression RPAREN
+    (3) expression -> . binary IMPLICATION expression
+    (4) expression -> . binary IMPLICATION CONTRADICTION
+    (5) expression -> . binary BICONDITIONAL expression
+    (6) expression -> . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 1
+    expression                     shift and go to state 12
+    root                           shift and go to state 3
+
+state 3
+
+    (11) unary -> root .
+
+    OR              reduce using rule 11 (unary -> root .)
+    AND             reduce using rule 11 (unary -> root .)
+    IMPLICATION     reduce using rule 11 (unary -> root .)
+    BICONDITIONAL   reduce using rule 11 (unary -> root .)
+    $end            reduce using rule 11 (unary -> root .)
+    RPAREN          reduce using rule 11 (unary -> root .)
+
+
+state 4
+
+    (1) statement -> CONTRADICTION .
+
+    $end            reduce using rule 1 (statement -> CONTRADICTION .)
+
+
+state 5
+
+    (13) root -> ID .
+
+    OR              reduce using rule 13 (root -> ID .)
+    AND             reduce using rule 13 (root -> ID .)
+    IMPLICATION     reduce using rule 13 (root -> ID .)
+    BICONDITIONAL   reduce using rule 13 (root -> ID .)
+    $end            reduce using rule 13 (root -> ID .)
+    RPAREN          reduce using rule 13 (root -> ID .)
+
+
+state 6
+
+    (7) binary -> unary . OR binary
+    (8) binary -> unary . AND binary
+    (9) binary -> unary .
+
+    OR              shift and go to state 13
+    AND             shift and go to state 14
+    IMPLICATION     reduce using rule 9 (binary -> unary .)
+    BICONDITIONAL   reduce using rule 9 (binary -> unary .)
+    $end            reduce using rule 9 (binary -> unary .)
+    RPAREN          reduce using rule 9 (binary -> unary .)
+
+
+state 7
+
+    (0) S' -> statement .
+
+
+
+state 8
+
+    (10) unary -> NOT . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 15
+    root                           shift and go to state 3
+
+state 9
+
+    (2) statement -> expression .
+
+    $end            reduce using rule 2 (statement -> expression .)
+
+
+state 10
+
+    (5) expression -> binary BICONDITIONAL . expression
+    (3) expression -> . binary IMPLICATION expression
+    (4) expression -> . binary IMPLICATION CONTRADICTION
+    (5) expression -> . binary BICONDITIONAL expression
+    (6) expression -> . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 1
+    expression                     shift and go to state 16
+    root                           shift and go to state 3
+
+state 11
+
+    (3) expression -> binary IMPLICATION . expression
+    (4) expression -> binary IMPLICATION . CONTRADICTION
+    (3) expression -> . binary IMPLICATION expression
+    (4) expression -> . binary IMPLICATION CONTRADICTION
+    (5) expression -> . binary BICONDITIONAL expression
+    (6) expression -> . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    CONTRADICTION   shift and go to state 17
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 1
+    expression                     shift and go to state 18
+    root                           shift and go to state 3
+
+state 12
+
+    (12) root -> LPAREN expression . RPAREN
+
+    RPAREN          shift and go to state 19
+
+
+state 13
+
+    (7) binary -> unary OR . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 20
+    root                           shift and go to state 3
+
+state 14
+
+    (8) binary -> unary AND . binary
+    (7) binary -> . unary OR binary
+    (8) binary -> . unary AND binary
+    (9) binary -> . unary
+    (10) unary -> . NOT unary
+    (11) unary -> . root
+    (12) root -> . LPAREN expression RPAREN
+    (13) root -> . ID
+
+    NOT             shift and go to state 8
+    LPAREN          shift and go to state 2
+    ID              shift and go to state 5
+
+    unary                          shift and go to state 6
+    binary                         shift and go to state 21
+    root                           shift and go to state 3
+
+state 15
+
+    (10) unary -> NOT unary .
+
+    OR              reduce using rule 10 (unary -> NOT unary .)
+    AND             reduce using rule 10 (unary -> NOT unary .)
+    IMPLICATION     reduce using rule 10 (unary -> NOT unary .)
+    BICONDITIONAL   reduce using rule 10 (unary -> NOT unary .)
+    $end            reduce using rule 10 (unary -> NOT unary .)
+    RPAREN          reduce using rule 10 (unary -> NOT unary .)
+
+
+state 16
+
+    (5) expression -> binary BICONDITIONAL expression .
+
+    RPAREN          reduce using rule 5 (expression -> binary BICONDITIONAL expression .)
+    $end            reduce using rule 5 (expression -> binary BICONDITIONAL expression .)
+
+
+state 17
+
+    (4) expression -> binary IMPLICATION CONTRADICTION .
+
+    RPAREN          reduce using rule 4 (expression -> binary IMPLICATION CONTRADICTION .)
+    $end            reduce using rule 4 (expression -> binary IMPLICATION CONTRADICTION .)
+
+
+state 18
+
+    (3) expression -> binary IMPLICATION expression .
+
+    RPAREN          reduce using rule 3 (expression -> binary IMPLICATION expression .)
+    $end            reduce using rule 3 (expression -> binary IMPLICATION expression .)
+
+
+state 19
+
+    (12) root -> LPAREN expression RPAREN .
+
+    OR              reduce using rule 12 (root -> LPAREN expression RPAREN .)
+    AND             reduce using rule 12 (root -> LPAREN expression RPAREN .)
+    IMPLICATION     reduce using rule 12 (root -> LPAREN expression RPAREN .)
+    BICONDITIONAL   reduce using rule 12 (root -> LPAREN expression RPAREN .)
+    $end            reduce using rule 12 (root -> LPAREN expression RPAREN .)
+    RPAREN          reduce using rule 12 (root -> LPAREN expression RPAREN .)
+
+
+state 20
+
+    (7) binary -> unary OR binary .
+
+    IMPLICATION     reduce using rule 7 (binary -> unary OR binary .)
+    BICONDITIONAL   reduce using rule 7 (binary -> unary OR binary .)
+    $end            reduce using rule 7 (binary -> unary OR binary .)
+    RPAREN          reduce using rule 7 (binary -> unary OR binary .)
+
+
+state 21
+
+    (8) binary -> unary AND binary .
+
+    IMPLICATION     reduce using rule 8 (binary -> unary AND binary .)
+    BICONDITIONAL   reduce using rule 8 (binary -> unary AND binary .)
+    $end            reduce using rule 8 (binary -> unary AND binary .)
+    RPAREN          reduce using rule 8 (binary -> unary AND binary .)
+

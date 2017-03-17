@@ -21,6 +21,18 @@ class BinaryStatement(Statement):
     def right(self):
         return self._right
 
+class AndStatement(Statement):
+    def __init__(self, value, children):
+        super(AndStatement, self).__init__(value)
+        self._children = children
+
+    @property
+    def children(self):
+        return self._children
+
+    def add_children(self, new_child):
+        self._children.append(new_child)
+
 class UnaryStatement(Statement):
 
     def __init__(self, value, argument):
@@ -47,6 +59,11 @@ def print_tree(tree, level=0):
         print "\t"*level, tree.value
         print_tree(tree.left, level + 1)
         print_tree(tree.right, level + 1)
+    elif isinstance(tree, AndStatement):
+        print "\t"*level, tree.value
+        #print tree.children
+        for i in range(0, len(tree.children)):
+            print_tree(tree.children[i], level+1)
     elif isinstance(tree, UnaryStatement):
         # print "level", level, ":", tree.value
         print "\t"*level, tree.value
@@ -60,6 +77,59 @@ def print_tree(tree, level=0):
     else:
         print "WARNING: could not understand tree type"
         assert False
+
+# Combine all the levels of an extended AND into a single level in the tree
+def squash_tree(tree, stack):
+    if isinstance(tree, BinaryStatement):
+        # Check if it's an AND
+        if tree.value == '&':
+            # Check the top of the stack and combine if not an AND statement
+            squash_tree(tree.left, stack)
+            squash_tree(tree.right, stack)
+            # print "THIS IS THE STARTING STACK:"
+            # print stack
+            prev_statement = stack.pop()
+            and_statement = AndStatement('&', [])
+            if len(stack) > 0:
+                # Keep adding to the list of children of the and statement until another and statement is reached
+                # Should work for left and right leaning tree with an "AND" chain
+                while len(stack) > 0 and not isinstance(prev_statement, AndStatement):
+                    # print type(prev_statement)
+                    and_statement.add_children(prev_statement)
+                    prev_statement = stack.pop()
+                and_statement.add_children(prev_statement)
+
+                if len(stack) > 0:
+                    prev_statement = stack.pop()
+                    # print type(prev_statement)
+                    # If the next thing on the stack is an "AND STATEMENT", then add all of it's components into this newer one
+                    if isinstance(prev_statement, AndStatement):
+                        for i in range(0, len(prev_statement.children)):
+                            and_statement.add_children(prev_statement.children[i])
+
+                stack.append(and_statement)
+            else:
+                stack.append(prev_statement)
+        else:
+            # For any other binary statement, just recreate the binary statement and push onto the stack
+            # If following a post order traversal, should be able to depend on the fact that the children are already on the stack
+            squash_tree(tree.left, stack)
+            squash_tree(tree.right, stack)
+            prev_right = stack.pop()
+            prev_left = stack.pop()
+            stack.append(BinaryStatement(tree.value, prev_left, prev_right))
+    elif isinstance(tree, UnaryStatement):
+        squash_tree(tree.child, stack)
+        prev_statement = stack.pop()
+        stack.append(UnaryStatement(tree.value, prev_statement))
+    elif isinstance(tree, IdStatement):
+        stack.append(IdStatement(tree.value))
+    elif isinstance(tree, ContradictionStatement):
+        stack.append(ContradictionStatement())
+    else:
+        print "WARNING: could not understand tree type"
+        assert False
+    return stack
 
 def getAllOrOperands(statement, ors):
     if statement.value != '|':
