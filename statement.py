@@ -1,5 +1,4 @@
 class Statement(object):
-
     def __init__(self, value):
         self._value = value
 
@@ -8,7 +7,6 @@ class Statement(object):
         return self._value
 
 class BinaryStatement(Statement):
-
     def __init__(self, value, arg1, arg2):
         super(BinaryStatement, self).__init__(value)
         self._left = arg1
@@ -34,7 +32,6 @@ class AndStatement(Statement):
         self._children.append(new_child)
 
 class UnaryStatement(Statement):
-
     def __init__(self, value, argument):
         super(UnaryStatement, self).__init__(value)
         self._child = argument
@@ -44,12 +41,10 @@ class UnaryStatement(Statement):
         return self._child
 
 class IdStatement(Statement):
-
     def __init__(self, value):
         super(IdStatement, self).__init__(value)
 
 class ContradictionStatement(Statement):
-
     def __init__(self):
         super(ContradictionStatement, self).__init__("!")
 
@@ -80,32 +75,25 @@ def print_tree(tree, level=0):
 
 # Combine all the levels of an extended AND into a single level in the tree
 def squash_tree(tree, stack):
-    if isinstance(tree, BinaryStatement):
+    if isinstance(tree, BinaryStatement) or isinstance(tree, AndStatement):
         # Check if it's an AND
         if tree.value == '&':
             # Check the top of the stack and combine if not an AND statement
             squash_tree(tree.left, stack)
             squash_tree(tree.right, stack)
-            # print "THIS IS THE STARTING STACK:"
-            # print stack
             prev_statement = stack.pop()
             and_statement = AndStatement('&', [])
             if len(stack) > 0:
                 # Keep adding to the list of children of the and statement until another and statement is reached
                 # Should work for left and right leaning tree with an "AND" chain
-                while len(stack) > 0 and not isinstance(prev_statement, AndStatement):
+                while len(stack) > 0 and (not isinstance(prev_statement, AndStatement) or not isinstance(prev_statement, BinaryStatement)):
                     # print type(prev_statement)
                     and_statement.add_children(prev_statement)
                     prev_statement = stack.pop()
-                and_statement.add_children(prev_statement)
-
-                if len(stack) > 0:
-                    prev_statement = stack.pop()
-                    # print type(prev_statement)
-                    # If the next thing on the stack is an "AND STATEMENT", then add all of it's components into this newer one
-                    if isinstance(prev_statement, AndStatement):
-                        for i in range(0, len(prev_statement.children)):
-                            and_statement.add_children(prev_statement.children[i])
+                if isinstance(prev_statement, BinaryStatement) or isinstance(prev_statement, AndStatement):
+                    stack.append(prev_statement)
+                else:
+                    and_statement.add_children(prev_statement)
 
                 stack.append(and_statement)
             else:
