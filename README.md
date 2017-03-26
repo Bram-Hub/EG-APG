@@ -47,6 +47,8 @@ end of atom : |
 ## Test
 In terminal, run:
 
-`python generate.py`
+`python generate.py <premise.txt> <goal.txt>`
 
-It will prompt you to input a single well-formed logic statement (recommended to not put in spaces).  Two trees will then be printed if you correctly put in a well-formed logic statement.  The first tree is a binary tree of the original statement, and the second tree is "squashed" tree where only "ANDs" are allowed to have multiple children.
+premises.txt and goal.txt should contain well-formed logic statement (recommended to not put in spaces).
+
+Two trees will be printed for each premise and goal if you correctly put in a well-formed logic statement.  The first tree is a binary tree of the original statement, and the second tree is "squashed" tree where only "ANDs" are allowed to have multiple children.
