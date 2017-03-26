@@ -19,7 +19,7 @@ def parse_and_print(logic_statement):
   stack = []
   e = transform(squashed_tree, stack)
   stack_len = len(e)
-  sa = SheetAssertion(0, [])
+  sa = SheetAssignment(0, [])
   for i in range(0, stack_len):
       prev_statement = e.pop()
       sa.add_children(prev_statement)

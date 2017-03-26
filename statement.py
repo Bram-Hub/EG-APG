@@ -87,13 +87,13 @@ def squash_tree(tree, stack):
                 # Keep adding to the list of children of the and statement until another and statement or binary statement is reached
                 # Should work for left and right leaning tree with an "AND" chain
                 while len(stack) > 0 and (not isinstance(prev_statement, AndStatement) or not isinstance(prev_statement, BinaryStatement)):
-                    print type(prev_statement)
+                    #print type(prev_statement)
                     and_statement.add_children(prev_statement)
                     prev_statement = stack.pop()
-                if isinstance(prev_statement, BinaryStatement) or isinstance(prev_statement, AndStatement):
-                    stack.append(prev_statement)
-                else:
-                    and_statement.add_children(prev_statement)
+                # if isinstance(prev_statement, BinaryStatement) or isinstance(prev_statement, AndStatement):
+                #     stack.append(prev_statement)
+                # else:
+                and_statement.add_children(prev_statement)
 
                 stack.append(and_statement)
             else:
