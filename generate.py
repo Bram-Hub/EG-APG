@@ -36,9 +36,11 @@ goal_text_file = sys.argv[2] #raw_input("Enter goal textfile name (ex. goal.txt)
 path = "testcases/"
 
 print '\nreading: ', premise_text_file
-file = open(path + premise_text_file, 'r') 
-premise = file.read()
-parse_and_print(premise)
+with open(path + premise_text_file, 'r') as file:
+    for line in file:
+      premise = line
+      print premise
+      parse_and_print(premise)
 
 print '\nreading: ', goal_text_file
 file = open(path + goal_text_file, 'r') 
