@@ -1,4 +1,5 @@
 from statement import *
+from sys import stdout
 '''
 Goal of this file to create basic classes to represent the different logical structures
 in Existential Graphs.  Will also contain the createTree function that transfrom the standard
@@ -28,13 +29,16 @@ class EGStatement(object):
     def num_children(self):
         return self._num_children
 
+    def printTree(self):
+        stdout.write(value)
+
 # Root of every Existential Graph Tree is the Sheet of Assertion (SA), so that's
 # the default value of a simple statement
 # Only takes in a list of children but the value is always "SA"
 # Children: >= 0
-class SheetAssertion(EGStatement):
+class SheetAssignment(EGStatement):
     def __init__(self, num_children, children):
-        super(SheetAssertion, self).__init__("SA", num_children)
+        super(SheetAssignment, self).__init__("SA", num_children)
         self._children = children
 
     @property
@@ -44,17 +48,27 @@ class SheetAssertion(EGStatement):
         self._children.append(new_child)
         self._num_children += 1
 
+    def printTree(self):
+        for i in range(0, self.num_children):
+            self.children[i].printTree()
+
 # An atom in the EG tree that only has a value that is a starting
 # Children: None
 class EGAtom(EGStatement):
     def __init__(self, value):
         super(EGAtom, self).__init__(value, 0)
 
+    def printTree(self):
+        stdout.write(self.value + "|")
+
 # An empty cut, or a contradiction, in the EG tree
 # Children: None
 class EGEmptyCut(EGStatement):
     def __init__(self):
         super(EGEmptyCut, self).__init__("()", 0)
+
+    def printTree(self):
+        stdout.write("()")
 
 # A negation is represented by a cut as the value and 1 child
 class EGNegation(EGStatement):
@@ -66,7 +80,13 @@ class EGNegation(EGStatement):
     def child(self):
         return self._child
 
+    def printTree(self):
+        stdout.write("(")
+        self.child.printTree()
+        stdout.write(")")
+
 # An and statement is represented by the SA as the value and at least 2 children
+# Potentially might need a redesign because "inner" SAs need to be removed from the tree
 class EGAnd(EGStatement):
     def __init__(self, num_children, children):
         super(EGAnd, self).__init__("SA", num_children)
@@ -78,6 +98,10 @@ class EGAnd(EGStatement):
     def add_children(self, new_child):
         self._children.append(new_child)
         self._num_children += 1
+
+    def printTree(self):
+        for i in range (0, self.num_children):
+            self.children[i].printTree()
 
 # A or statement is represented by a cut as the value and 2 children
 # Need to figure out how to represent something like: p | q | r | etc.
@@ -94,6 +118,12 @@ class EGOr(EGStatement):
     def right(self):
         return self._right
 
+    def printTree(self):
+        stdout.write("(")
+        self.left.printTree()
+        self.right.printTree()
+        stdout.write(")")
+
 # An implication is represented by a cut and 2 children
 class EGImp(EGStatement):
     def __init__(self, left, right):
@@ -108,7 +138,14 @@ class EGImp(EGStatement):
     def right(self):
         return self._right
 
+    def printTree(self):
+        stdout.write("(")
+        self.left.printTree()
+        self.right.printTree()
+        stdout.write(")")
+
 # A biconditional is represented by the SA and two children
+# Potentially might need a redesign because "inner" SAs need to be removed from the tree
 class EGBicon(EGStatement):
     def __init__(self, left, right):
         super(EGBicon, self).__init__("SA", 2)
@@ -121,6 +158,10 @@ class EGBicon(EGStatement):
     @property
     def right(self):
         return self._right
+
+    def printTree(self):
+        self.left.printTree()
+        self.right.printTree()
 
 # Takes a "standard-squashed" tree and converts it into an existential graph
 # tree.  Returns the stack - need to add SA root outside
@@ -150,8 +191,6 @@ def transform(tree, stack):
             transform(tree.right, stack)
             prev_right = stack.pop()
             prev_left = stack.pop()
-            # new_left = EGNegation(prev_left)
-            # new_right = EGNegation(prev_right)
             stack.append(EGOr(prev_left, prev_right))
         elif tree.value == '-':
             transform(tree.left, stack)
@@ -171,7 +210,7 @@ def transform(tree, stack):
     return stack
 
 def print_eg_tree(tree, level=0):
-    if isinstance(tree, SheetAssertion):
+    if isinstance(tree, SheetAssignment):
         # print "level", level, ":", tree.value
         print "\t"*level, tree.value
         for i in range(0, tree.num_children):
@@ -180,7 +219,7 @@ def print_eg_tree(tree, level=0):
         print "\t"*level, tree.value
         #print tree.children
         for i in range(0, tree.num_children):
-            print_eg_tree(tree.children[i], level+1)
+            print_eg_tree(tree.children[i], level + 1)
     elif isinstance(tree, EGOr) or isinstance(tree, EGImp) or isinstance(tree, EGBicon):
         # print "level", level, ":", tree.value
         print "\t"*level, tree.value
@@ -198,3 +237,9 @@ def print_eg_tree(tree, level=0):
     else:
         print "WARNING: could not understand tree type"
         assert False
+
+# Consider implementing a print statement for each class
+def print_tree_pegasus_style(tree):
+    print "Printing out existential graph tree in minimal Pegasus format..."
+    tree.printTree()
+    print

@@ -58,7 +58,7 @@ def print_tree(tree, level=0):
         print "\t"*level, tree.value
         #print tree.children
         for i in range(0, len(tree.children)):
-            print_tree(tree.children[i], level+1)
+            print_tree(tree.children[i], level + 1)
     elif isinstance(tree, UnaryStatement):
         # print "level", level, ":", tree.value
         print "\t"*level, tree.value
@@ -84,10 +84,10 @@ def squash_tree(tree, stack):
             prev_statement = stack.pop()
             and_statement = AndStatement('&', [])
             if len(stack) > 0:
-                # Keep adding to the list of children of the and statement until another and statement is reached
+                # Keep adding to the list of children of the and statement until another and statement or binary statement is reached
                 # Should work for left and right leaning tree with an "AND" chain
                 while len(stack) > 0 and (not isinstance(prev_statement, AndStatement) or not isinstance(prev_statement, BinaryStatement)):
-                    # print type(prev_statement)
+                    print type(prev_statement)
                     and_statement.add_children(prev_statement)
                     prev_statement = stack.pop()
                 if isinstance(prev_statement, BinaryStatement) or isinstance(prev_statement, AndStatement):
