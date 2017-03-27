@@ -47,6 +47,8 @@ end of atom : |
 ## Test
 In terminal, run:
 
+`cd src`
+
 `python generate.py <premise.txt> <goal.txt>`
 
 premises.txt and goal.txt should contain well-formed logic statement (recommended to not put in spaces).
