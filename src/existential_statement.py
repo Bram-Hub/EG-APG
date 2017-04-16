@@ -47,6 +47,11 @@ class SheetAssignment(EGStatement):
     def add_children(self, new_child):
         self._children.append(new_child)
         self._num_children += 1
+    def remove_child(self, child_index):
+        del self._children[child_index]
+        self._num_children -= 1
+    def replace_child(self, new_child, child_index):
+        self._children[child_index] = new_child
 
     def printTree(self):
         for i in range(0, self.num_children):
@@ -79,6 +84,8 @@ class EGNegation(EGStatement):
     @property
     def child(self):
         return self._child
+    def replace_child(self, new_child):
+        self._child = new_child
 
     def printTree(self):
         stdout.write("(")
@@ -98,6 +105,13 @@ class EGAnd(EGStatement):
     def add_children(self, new_child):
         self._children.append(new_child)
         self._num_children += 1
+    def remove_child(self, child_index):
+        del self._children[child_index]
+        self._num_children -= 1
+    def replace_child(self, new_child, child_index):
+        print_eg_tree(self._children[child_index])
+        self._children[child_index] = new_child
+        print_eg_tree(self._children[child_index])
 
     def printTree(self):
         for i in range (0, self.num_children):
@@ -114,9 +128,13 @@ class EGOr(EGStatement):
     @property
     def left(self):
         return self._left
+    def replace_left_child(self, new_child):
+        self._left = new_child
     @property
     def right(self):
         return self._right
+    def replace_right_child(self, new_child):
+        self._right = new_child
 
     def printTree(self):
         stdout.write("(")
@@ -134,9 +152,13 @@ class EGImp(EGStatement):
     @property
     def left(self):
         return self._left
+    def replace_left_child(self, new_child):
+        self._left = new_child
     @property
     def right(self):
         return self._right
+    def replace_right_child(self, new_child):
+        self._right = new_child
 
     def printTree(self):
         stdout.write("(")
@@ -155,9 +177,13 @@ class EGBicon(EGStatement):
     @property
     def left(self):
         return self._left
+    def replace_left_child(self, new_child):
+        self._left = new_child
     @property
     def right(self):
         return self._right
+    def replace_right_child(self, new_child):
+        self._right = new_child
 
     def printTree(self):
         self.left.printTree()
