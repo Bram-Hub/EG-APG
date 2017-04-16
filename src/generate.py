@@ -1,6 +1,7 @@
 from statement import squash_tree, print_tree
 from existential_statement import *
 from parse_tree import parse_sentence
+from rules import *
 import sys
 
 # Note this only takes in one line at a time, so for multiple premises,
@@ -28,6 +29,21 @@ def parse_and_print(logic_statement):
 
   # Print in minimal Pegasus format for debugging
   print_tree_pegasus_style(eg_tree)
+
+  # Test for remove double cut - should write a general double cut function that handles what you pass in and stuff
+  # print "Removing a double cut"
+  # no_dc_tree = node_of_cut_to_rm(eg_tree.children[0])
+  # print_eg_tree(no_dc_tree)
+
+  # Test for adding a double cut
+  # print "Adding a double cut"
+  # new_dc_tree = node_of_cut_to_add(eg_tree.children[0])
+  # print_eg_tree(new_dc_tree)
+
+  # Test for iterating
+  # print "Iterating"
+  # new_tree = iterate(eg_tree.children[0].children[1], eg_tree.children[0].children[0])
+  # print_eg_tree(new_tree)
 
 if len(sys.argv) != 3:
   print "invalid command. please enter \"python generate.py premise.txt goal.txt\""
