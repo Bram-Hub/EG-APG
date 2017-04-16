@@ -2,6 +2,13 @@ from parse_tree import parse_sentence
 from statement import *
 from existential_statement import *
 
+# TODO: Figure out if we should pass in the entire tree or just the parent of
+# what needs to be double cutted -> essentially how do we relink up the entire Tree
+# NOTE: also another idea to consider: should we have a parent attribute for
+# each statement so that way we can go back and forth between parent and children?
+def add_double_cut(root):
+    return False
+
 # Pass in the root node of the to be DC structure
 # Insert double cut around the specified node
 # Returns the modified node that contains the DC around it
@@ -20,7 +27,7 @@ def node_of_cut_to_rm(parent):
     # have double cuts
     if not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
         # In both of these cases, each child could potentially contain a double cut
-        if isinstance(parent, EGAnd) or isinstance(parent, SheetAssignment):
+        if isinstance(parent, EGAnd) and isinstance(parent, SheetAssignment):
             children = parent.children
             for i in range(0, len(children)):
                 child = children[i]
@@ -60,7 +67,7 @@ def iterate(parent, to_iterate):
     if isinstance(parent, EGAnd) or isinstance(parent, SheetAssignment):
         parent.add_children(to_iterate)
     # Can't iterate anything into an atom or empty cut
-    elif not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
+elif not isinstance(parent, EGAtom) and not isinstance(parent, EGEmptyCut):
         # If it's already a negation, just make sure the child is an and statement
         if isinstance(parent, EGNegation):
             if not isinstance(parent.child, EGAnd):
@@ -80,4 +87,36 @@ def iterate(parent, to_iterate):
             new_child = EGAnd(2, old_children)
             new_child.add_children(to_iterate)
             parent = EGNegation(new_child)
+    return parent
+
+# Usage note: if attempting to deiterate on an OR, IMPLICATION, BICONDITIONAL
+# statement, then pass in a '0' for the left child or a '1' for the right child
+# Assumes that determining the correct child has been figured out already
+# Note that if deiterating in something that does not resemble an AND-like
+# structure, means that the child will be replaced with a None object
+# Removes the child from the parent's list of children
+# Returns the modified parent with the specified child deiterated
+def deiterate(parent, index_of_child_to_deiterate):
+    # If it's just an AND-like statement, then just remove the specified child
+    if isinstance(parent, EGAnd) or isinstance(parent, SheetAssignment):
+        parent.remove_child(index_of_child_to_deiterate)
+    # Cannot deiterate from an atom or empty cut statement
+    elif not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
+        # First check if it's a negation statement
+        if isinstance(parent, EGNegation):
+            if isinstance(parent.child, EGAnd):
+                parent.child.remove_child(index_of_child_to_deiterate)
+            else:
+                # If it's a negation of anything else, just erase everything
+                parent.replace_child(None)
+        else:
+            try:
+                # If it's an OR, IMP, or BICON, then determine which child to remove
+                if index_of_child_to_deiterate == 0:
+                    parent.replace_left_child(None)
+                elif index_of_child_to_deiterate == 1:
+                    parent.replace_right_child(None)
+                break
+            except ValueError:
+                print "Incorrect indices for left or right child!"
     return parent
