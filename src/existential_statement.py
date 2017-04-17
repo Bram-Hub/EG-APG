@@ -55,7 +55,10 @@ class SheetAssignment(EGStatement):
 
     def printTree(self):
         for i in range(0, self.num_children):
-            self.children[i].printTree()
+            if self.children[i] == None:
+                stdout.write("()")
+            else:
+                self.children[i].printTree()
 
 # An atom in the EG tree that only has a value that is a starting
 # Children: None
@@ -89,7 +92,10 @@ class EGNegation(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.child.printTree()
+        if self.child == None:
+            stdout.write("()")
+        else:
+            self.child.printTree()
         stdout.write(")")
 
 # An and statement is represented by the SA as the value and at least 2 children
@@ -115,7 +121,10 @@ class EGAnd(EGStatement):
 
     def printTree(self):
         for i in range (0, self.num_children):
-            self.children[i].printTree()
+            if self.children[i] == None:
+                stdout.write("()")
+            else:
+                self.children[i].printTree()
 
 # A or statement is represented by a cut as the value and 2 children
 # Need to figure out how to represent something like: p | q | r | etc.
@@ -138,8 +147,14 @@ class EGOr(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
         stdout.write(")")
 
 # An implication is represented by a cut and 2 children
@@ -162,8 +177,14 @@ class EGImp(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
         stdout.write(")")
 
 # A biconditional is represented by the SA and two children
@@ -186,8 +207,14 @@ class EGBicon(EGStatement):
         self._right = new_child
 
     def printTree(self):
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
 
 # Takes a "standard-squashed" tree and converts it into an existential graph
 # tree.  Returns the stack - need to add SA root outside
