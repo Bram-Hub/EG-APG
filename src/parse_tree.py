@@ -113,6 +113,6 @@ parser = yacc.yacc()
 
 def parse_sentence(s):
     ret = parser.parse(s)
-    print("DEBUG")
-    statement.print_tree(ret)
+    # print("DEBUG")
+    # statement.print_tree(ret)
     return ret
