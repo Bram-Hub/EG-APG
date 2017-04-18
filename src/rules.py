@@ -2,13 +2,6 @@ from parse_tree import parse_sentence
 from statement import *
 from existential_statement import *
 
-# TODO: Figure out if we should pass in the entire tree or just the parent of
-# what needs to be double cutted -> essentially how do we relink up the entire Tree
-# NOTE: also another idea to consider: should we have a parent attribute for
-# each statement so that way we can go back and forth between parent and children?
-def add_double_cut(root):
-    return False
-
 # Pass in the root node of the to be DC structure
 # Insert double cut around the specified node
 # Returns the modified node that contains the DC around it
@@ -37,13 +30,18 @@ def node_of_cut_to_rm(parent):
                     if isinstance(child.child, EGNegation):
                         new_child = child.child.child # Save whatever is inside the double cut
                         parent.replace_child(new_child, i) # By moving the child, should be removing the DC
+                    # If it's just a negation of an empty cut, just delete the child
+                    elif isinstance(child.child, EGEmptyCut):
+                        parent.remove_child(i)
         elif isinstance(parent, EGNegation):
             child = parent.child
             # Check if the Negation contains a DC as children
             if isinstance(child, EGNegation):
-                if isinstance(child, EGNegation):
+                if isinstance(child.child, EGNegation):
                     new_child = child.child.child
                     parent.replace_child(new_child)
+                elif isinstance(child.child, EGEmptyCut):
+                    parent.replace_child(None)
         else:
             left_child = parent.left
             right_child = parent.right
@@ -52,10 +50,14 @@ def node_of_cut_to_rm(parent):
                 if isinstance(left_child.child, EGNegation):
                     new_child = left_child.child.child
                     parent.left.replace_left_child(new_child)
+                elif isinstance(left_child.child, EGEmptyCut):
+                    parent.left.replace_left_child(None)
             if isinstance(right_child, EGNegation):
                 if isinstance(left_child.child, EGNegation):
                     new_child = right_child.child.child
                     parent.right.replace_right_child(new_child)
+                elif isinstance(right_child.child, EGEmptyCut):
+                    parent.replace_right_child(None)
     return parent
 
 # Pass in the parent (root) of the node of where to insert the iteration and the thing to iterate
@@ -67,7 +69,7 @@ def iterate(parent, to_iterate):
     if isinstance(parent, EGAnd) or isinstance(parent, SheetAssignment):
         parent.add_children(to_iterate)
     # Can't iterate anything into an atom or empty cut
-elif not isinstance(parent, EGAtom) and not isinstance(parent, EGEmptyCut):
+    elif not isinstance(parent, EGAtom) and not isinstance(parent, EGEmptyCut):
         # If it's already a negation, just make sure the child is an and statement
         if isinstance(parent, EGNegation):
             if not isinstance(parent.child, EGAnd):
