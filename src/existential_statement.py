@@ -32,6 +32,9 @@ class EGStatement(object):
     def printTree(self):
         stdout.write(value)
 
+    def to_string_tree(self):
+        return str(value)
+
 # Root of every Existential Graph Tree is the Sheet of Assertion (SA), so that's
 # the default value of a simple statement
 # Only takes in a list of children but the value is always "SA"
@@ -57,6 +60,12 @@ class SheetAssignment(EGStatement):
         for i in range(0, self.num_children):
             self.children[i].printTree()
 
+    def to_string_tree(self):
+        my_str = ""
+        for i in range(0, self.num_children):
+            my_str += self.children[i].to_string_tree()
+        return my_str
+
 # An atom in the EG tree that only has a value that is a starting
 # Children: None
 class EGAtom(EGStatement):
@@ -66,6 +75,9 @@ class EGAtom(EGStatement):
     def printTree(self):
         stdout.write(self.value + "|")
 
+    def to_string_tree(self):
+        return str(self.value) + "|"
+
 # An empty cut, or a contradiction, in the EG tree
 # Children: None
 class EGEmptyCut(EGStatement):
@@ -74,6 +86,9 @@ class EGEmptyCut(EGStatement):
 
     def printTree(self):
         stdout.write("()")
+
+    def to_string_tree(self):
+        return "()"
 
 # A negation is represented by a cut as the value and 1 child
 class EGNegation(EGStatement):
@@ -91,6 +106,13 @@ class EGNegation(EGStatement):
         stdout.write("(")
         self.child.printTree()
         stdout.write(")")
+
+    def to_string_tree(self):
+        my_str = ""
+        my_str += "("
+        my_str += self.child.to_string_tree()
+        my_str += ")"
+        return my_str
 
 # An and statement is represented by the SA as the value and at least 2 children
 # Potentially might need a redesign because "inner" SAs need to be removed from the tree
@@ -117,6 +139,12 @@ class EGAnd(EGStatement):
         for i in range (0, self.num_children):
             self.children[i].printTree()
 
+    def to_string_tree(self):
+        my_str = ""
+        for i in range (0, self.num_children):
+            my_str += self.children[i].to_string_tree()
+        return my_str
+
 # A or statement is represented by a cut as the value and 2 children
 # Need to figure out how to represent something like: p | q | r | etc.
 class EGOr(EGStatement):
@@ -142,6 +170,14 @@ class EGOr(EGStatement):
         self.right.printTree()
         stdout.write(")")
 
+    def to_string_tree(self):
+        my_str = ""
+        my_str += "("
+        my_str += self.left.to_string_tree()
+        my_str += self.right.to_string_tree()
+        my_str += ")"
+        return my_str
+
 # An implication is represented by a cut and 2 children
 class EGImp(EGStatement):
     def __init__(self, left, right):
@@ -166,6 +202,14 @@ class EGImp(EGStatement):
         self.right.printTree()
         stdout.write(")")
 
+    def to_string_tree(self):
+        my_str = ""
+        my_str += "("
+        my_str += self.right.to_string_tree()
+        my_str += self.left.to_string_tree()
+        my_str += ")"
+        return my_str
+
 # A biconditional is represented by the SA and two children
 # Potentially might need a redesign because "inner" SAs need to be removed from the tree
 class EGBicon(EGStatement):
@@ -188,6 +232,11 @@ class EGBicon(EGStatement):
     def printTree(self):
         self.left.printTree()
         self.right.printTree()
+
+    def to_string_tree(self):
+        my_str = ""
+        my_str += self.left.to_string_tree()
+        my_str += self.right.to_string_tree()
 
 # Takes a "standard-squashed" tree and converts it into an existential graph
 # tree.  Returns the stack - need to add SA root outside
@@ -268,4 +317,13 @@ def print_eg_tree(tree, level=0):
 def print_tree_pegasus_style(tree):
     print "Printing out existential graph tree in minimal Pegasus format..."
     tree.printTree()
-    print
+    print tree.to_string_tree()
+
+# compare function:
+# input: two existential statements
+# returns true if EG equivelent
+# otherwise false
+def compare_EG_trees(eg_tree_1, eg_tree_2):
+    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
+        return True
+    return False
