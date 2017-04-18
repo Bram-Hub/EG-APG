@@ -320,6 +320,8 @@ def print_eg_tree(tree, level=0):
     elif isinstance(tree, EGEmptyCut):
         print "\t"*level, tree.value
         # print "level", level, ":", tree.value
+    elif tree is None:
+        pass
     else:
         print "WARNING: could not understand tree type"
         assert False
@@ -328,7 +330,7 @@ def print_eg_tree(tree, level=0):
 def print_tree_pegasus_style(tree):
     print "Printing out existential graph tree in minimal Pegasus format..."
     tree.printTree()
-    print tree.to_string_tree()
+    #print tree.to_string_tree()
 
 # compare function:
 # input: two existential statements

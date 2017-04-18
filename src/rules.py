@@ -118,7 +118,6 @@ def deiterate(parent, index_of_child_to_deiterate):
                     parent.replace_left_child(None)
                 elif index_of_child_to_deiterate == 1:
                     parent.replace_right_child(None)
-                break
             except ValueError:
                 print "Incorrect indices for left or right child!"
     return parent
