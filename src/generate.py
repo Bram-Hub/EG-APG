@@ -2,6 +2,7 @@ from statement import squash_tree, print_tree
 from existential_statement import *
 from parse_tree import parse_sentence
 from rules import *
+from proof_generation import find_proof
 import sys
 
 # Note this only takes in one line at a time, so for multiple premises,
@@ -70,7 +71,7 @@ with open(path + premise_text_file, 'r') as file:
         # #DBUGGING PRINT
         # print_eg_tree(premise_tree)
         # #ANOTHER DEBUGGING PRINT
-        # print_tree_pegasus_style(premise_tree)
+        print_tree_pegasus_style(premise_tree)
 
 for tree in premise_trees:
     #DBUGGING PRINT
@@ -89,10 +90,9 @@ print_eg_tree(goal_tree)
 #ANOTHER DEBUGGING PRINT
 print_tree_pegasus_style(goal_tree)
 
-
 # testing compare
-print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
-print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
+# print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
+# print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
 
 # uncomment when find_proof happens
-# find_proof(premises_tree, goal_tree)
+find_proof(premise_tree, goal_tree)

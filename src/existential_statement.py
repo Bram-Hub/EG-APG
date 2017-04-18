@@ -1,21 +1,5 @@
 from statement import *
 from sys import stdout
-'''
-Goal of this file to create basic classes to represent the different logical structures
-in Existential Graphs.  Will also contain the createTree function that transfrom the standard
-tree into the Existential Graph tree.
-
-1. Convert statents using lex and yacc into starting tree
-2. Apply the visitor pattern to search through starting tree for AND statements and squash the children to a single level
-    - Add a function to statment.py - will probably want to make a subclass from binary statement specially for ANDs
-3. Transformation function
-    - Post order traversal on the starting tree using the visitor pattern
-    - Keep a stack of "trees", so basically hold each chunck of the new EG tree where the top of the stack represents the top of the tree at thend
-    - When you see a function (eg. NOT AND OR IMP BICON), call the associating EG convert function that just sets up the structure where you pass in the next two or more (for AND) elements as children
-    - Push the new EG component created from the step before onto the stack
-    - At the end, stack should only contain EG components and the root function which you then do a final Transformation
-    - Return the tree
-'''
 
 class EGStatement(object):
     def __init__(self, value, num_children):
@@ -58,7 +42,10 @@ class SheetAssignment(EGStatement):
 
     def printTree(self):
         for i in range(0, self.num_children):
-            self.children[i].printTree()
+            if self.children[i] == None:
+                stdout.write("()")
+            else:
+                self.children[i].printTree()
 
     def to_string_tree(self):
         my_str = ""
@@ -104,7 +91,10 @@ class EGNegation(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.child.printTree()
+        if self.child == None:
+            stdout.write("()")
+        else:
+            self.child.printTree()
         stdout.write(")")
 
     def to_string_tree(self):
@@ -137,7 +127,10 @@ class EGAnd(EGStatement):
 
     def printTree(self):
         for i in range (0, self.num_children):
-            self.children[i].printTree()
+            if self.children[i] == None:
+                stdout.write("()")
+            else:
+                self.children[i].printTree()
 
     def to_string_tree(self):
         my_str = ""
@@ -166,8 +159,14 @@ class EGOr(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
         stdout.write(")")
 
     def to_string_tree(self):
@@ -198,8 +197,14 @@ class EGImp(EGStatement):
 
     def printTree(self):
         stdout.write("(")
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
         stdout.write(")")
 
     def to_string_tree(self):
@@ -230,8 +235,14 @@ class EGBicon(EGStatement):
         self._right = new_child
 
     def printTree(self):
-        self.left.printTree()
-        self.right.printTree()
+        if self.left == None:
+            stdout.write("()")
+        else:
+            self.left.printTree()
+        if self.right == None:
+            stdout.write("()")
+        else:
+            self.right.printTree()
 
     def to_string_tree(self):
         my_str = ""
@@ -309,6 +320,8 @@ def print_eg_tree(tree, level=0):
     elif isinstance(tree, EGEmptyCut):
         print "\t"*level, tree.value
         # print "level", level, ":", tree.value
+    elif tree is None:
+        pass
     else:
         print "WARNING: could not understand tree type"
         assert False
@@ -317,7 +330,7 @@ def print_eg_tree(tree, level=0):
 def print_tree_pegasus_style(tree):
     print "Printing out existential graph tree in minimal Pegasus format..."
     tree.printTree()
-    print tree.to_string_tree()
+    #print tree.to_string_tree()
 
 # compare function:
 # input: two existential statements
