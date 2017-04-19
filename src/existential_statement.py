@@ -1,5 +1,6 @@
 from statement import *
 from sys import stdout
+import string
 '''
 Goal of this file to create basic classes to represent the different logical structures
 in Existential Graphs.  Will also contain the createTree function that transfrom the standard
@@ -319,11 +320,78 @@ def print_tree_pegasus_style(tree):
     tree.printTree()
     print tree.to_string_tree()
 
+# given n,
+# returns all permutations
+
+#ex. n=1: [[1]]
+#ex. n=2: [[1,2],[2,1]]
+#ex. n=3: [[x,1,2][1,x,2][1,2,x],[x,2,1][2,x,1][2,1,x]]
+# [[3,1,2][1,3,2][1,2,3],[3,2,1][2,3,1][2,1,3]]
+#ex. n=4: [[]]
+def permutate(n):
+    p = []
+    if n == 1:
+        p.append([1])
+        return p
+    else:
+        temp = permutate(n-1)
+        print "temp: ", temp
+        end = len(temp)
+        build = []
+        for j in range (end):
+            for i in range (n-1):
+                print "j: ", j, " i:",i
+                build.extend(temp[j][0:i+1])
+                build.append(n)
+                build.extend(temp[j][i+1:end])
+                p.append(build)
+                build = []
+            build.extend(temp[j])
+            build.append(n)
+            p.append(build)
+            build = []
+        return p
+
+
+def children_of(str_t):
+    children = []
+    next_index = 0
+    for i in range(len(str_t)-1):
+        if i < next_index:
+            continue
+        if str_t[i] == '(':
+            child_index = i
+            next_index = str_t.find(')', i)+1
+        else:
+            child_index = i
+            next_index = str_t.find('|', i)+1
+
+        children.append(str_t[child_index:next_index])
+    return children
+        # str.find(str, beg=0, end=len(string))
+
+def string_permutations_of_EG_tree(t):
+    permutations = []
+    ch = children_of(t.to_string_tree())
+    print ch
+
+    # permutations.append(t.to_string_tree())
+
+    return permutations
+
+
+
 # compare function:
 # input: two existential statements
 # returns true if EG equivelent
 # otherwise false
 def compare_EG_trees(eg_tree_1, eg_tree_2):
-    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
-        return True
+    test = permutate(3)
+    print "test 3: ", test
+    permutations = string_permutations_of_EG_tree(eg_tree_2)
+    print "permutations"
+    for p in permutations:
+        print p
+        if eg_tree_1.to_string_tree() == p:
+            return True
     return False

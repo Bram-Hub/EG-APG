@@ -90,7 +90,7 @@ print_eg_tree(goal_tree)
 print_tree_pegasus_style(goal_tree)
 
 
-# testing compare
+# testing compare : should make more tests for like if extra SA's
 print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
 print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
 
