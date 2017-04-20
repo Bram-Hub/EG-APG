@@ -4,6 +4,14 @@ from existential_statement import *
 from rules import *
 import sys
 
+# Helper function - removes any literal that matches the specified literal
+def remove_literal(literal, tree, out_file):
+    return False
+
+# Helper function - clean up any double cuts and empty cuts
+def cleanup(tree, out_file):
+    return False
+
 # Converts the premises tree into the format needed for conducting the proof
 # Also includes the setup files in the output file
 def setup(premises, goal, out_file):
@@ -100,14 +108,14 @@ def eg_cons(eg_tree, out_file):
             eg_tree.remove_child(0)
             eg_tree.replace_child(premises, 0)
             for i in range(0, premises.child.num_children()):
-                return eg_cons(premises.child.children[i], out_file) # Hopefully will terminate -> should just return an empty cut
+                temp_child = cleanup(premises.child.children[i], out_file)
+                return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
         else:
             print_eg_tree(eg_tree)
             sys.exit("Incorrectly formatted tree for the 4th case in eg_cons!")
     else:
         print_eg_tree(eg_tree)
         sys.exit("Incorrectly formatted tree for eg_cons!")
-    return False
 
 # Main function for finding a proof with the given premises and goal
 # Takes in a tree of all the premises combined into a single eg tree and the
