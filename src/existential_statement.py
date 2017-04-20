@@ -123,9 +123,7 @@ class EGAnd(EGStatement):
         del self._children[child_index]
         self._num_children -= 1
     def replace_child(self, new_child, child_index):
-        print_eg_tree(self._children[child_index])
         self._children[child_index] = new_child
-        print_eg_tree(self._children[child_index])
 
     def printTree(self):
         for i in range (0, self.num_children):
@@ -379,7 +377,7 @@ def children_of(str_t):
 
     # if len(opens) != len(closes):
         # print "screwed up somehow: length of opens doesn't equal length of closes"
-    
+
     # if simple children, no cuts
     if str_t.find('(') == -1:
          for i in range(len(str_t)-1):
@@ -390,7 +388,7 @@ def children_of(str_t):
             next_index = str_t.find('|', i)+1
             # add the child to the list of em all
             if child_index != next_index:
-                children.append(str_t[child_index:next_index])    
+                children.append(str_t[child_index:next_index])
     else:
     # more complicated children - figure out the matching close paren
         for i in range(len(str_t)):
@@ -431,7 +429,7 @@ def string_permutations_of_EG_tree(t):
     permutations = []
     str_t = t.to_string_tree()
     ch_list = children_of(str_t)
-    print "childresn!!!: ", ch_list 
+    print "childresn!!!: ", ch_list
 
     permutation_indicies = permutate(len(ch_list))
     print "permutation_indicies: ", permutation_indicies
@@ -445,8 +443,6 @@ def string_permutations_of_EG_tree(t):
     # permutations.append(t.to_string_tree())
 
     return permutations
-
-
 
 # compare function:
 # input: two existential statements

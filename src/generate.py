@@ -60,7 +60,6 @@ path = "../testcases/"
 
 premise_trees = []
 
-
 print '\nPREMISE reading: ', premise_text_file
 with open(path + premise_text_file, 'r') as file:
     for line in file:
@@ -73,27 +72,46 @@ with open(path + premise_text_file, 'r') as file:
         # #ANOTHER DEBUGGING PRINT
         print_tree_pegasus_style(premise_tree)
 
-for tree in premise_trees:
-    #DBUGGING PRINT
-    print "Printing beautiful sideways format"
-    print_eg_tree(tree)
-    #ANOTHER DEBUGGING PRINT
-    print_tree_pegasus_style(tree)
+final_premise_tree = SheetAssignment(0, [])
+and_tree = EGAnd(0, [])
+
+# If there's only one premise, then don't need to concatenate anything together
+if len(premise_trees) == 1:
+    final_premise_tree = premise_trees[0]
+else:
+    # Assume that the root of every tree is SA
+    for tree in premise_trees:
+        #DEBUGGING PRINT
+        print "Printing beautiful sideways format"
+        print_eg_tree(tree)
+        #ANOTHER DEBUGGING PRINT
+        print_tree_pegasus_style(tree)
+        # Merge premises into a single tree
+        if tree.num_children > 1:
+            temp = EGAnd(0, [])
+            for i in range(0, tree.num_children):
+                temp.add_children(tree.children[i])
+                final_premise_tree.add_children(temp)
+        else:
+            and_tree.add_children(tree.children[0])
+    final_premise_tree.add_children(and_tree)
+
+print "Final Premise Tree:"
+print_eg_tree(final_premise_tree)
 
 print '\n\nGOAL reading: ', goal_text_file
 file = open(path + goal_text_file, 'r')
 goal = file.read()
 goal_tree = parse(goal)
-#DBUGGING PRINT
+#DEBUGGING PRINT
 print "Printing beautiful sideways format"
 print_eg_tree(goal_tree)
 #ANOTHER DEBUGGING PRINT
 print_tree_pegasus_style(goal_tree)
 
 # testing compare : should make more tests for like if extra SA's
-print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
+#print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
 # print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
 
-
 # uncomment when find_proof happens
-find_proof(premise_tree, goal_tree)
+find_proof(final_premise_tree, goal_tree)
