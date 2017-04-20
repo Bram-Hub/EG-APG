@@ -3,3 +3,7 @@
 *.exe
 *.o
 *.pyc
+
+# Output Files #
+################
+*.pega
