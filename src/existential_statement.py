@@ -1,5 +1,7 @@
 from statement import *
 from sys import stdout
+import re
+# import string
 
 class EGStatement(object):
     def __init__(self, value, num_children):
@@ -332,11 +334,131 @@ def print_tree_pegasus_style(tree):
     tree.printTree()
     #print tree.to_string_tree()
 
+# given n,
+# returns all permutations
+
+#ex. n=1: [[1]]
+#ex. n=2: [[1,2],[2,1]]
+#ex. n=3: [[x,1,2][1,x,2][1,2,x],[x,2,1][2,x,1][2,1,x]]
+# [[3,1,2][1,3,2][1,2,3],[3,2,1][2,3,1][2,1,3]]
+#ex. n=4: [[]]
+def permutate(n):
+    p = []
+    if n == 1:
+        p.append([1])
+        return p
+    else:
+        temp = permutate(n-1)
+        print "temp: ", temp
+        end = len(temp)
+        build = []
+        for j in range (end):
+            for i in range (n-1):
+                print "j: ", j, " i:",i
+                build.extend(temp[j][0:i])
+                build.append(n)
+                build.extend(temp[j][i:end])
+                p.append(build)
+                build = []
+            build.extend(temp[j])
+            build.append(n)
+            p.append(build)
+            build = []
+        return p
+
+
+def children_of(str_t):
+    children = []
+    next_index = 0
+
+    # opens = [m.start() for m in re.finditer('\(', str_t)]
+    # closes = [m.start() for m in re.finditer('\)', str_t)]
+
+    # print "opens: ", opens, "   closes: ", closes
+
+
+    # if len(opens) != len(closes):
+        # print "screwed up somehow: length of opens doesn't equal length of closes"
+    
+    # if simple children, no cuts
+    if str_t.find('(') == -1:
+         for i in range(len(str_t)-1):
+            if i < next_index:
+                continue
+            # identify the start and end index of this child
+            child_index = i
+            next_index = str_t.find('|', i)+1
+            # add the child to the list of em all
+            if child_index != next_index:
+                children.append(str_t[child_index:next_index])    
+    else:
+    # more complicated children - figure out the matching close paren
+        for i in range(len(str_t)):
+            if i < next_index:
+                continue
+            if str_t[i] == '(':
+                open_paren_count = 1  #umm not sure why this is a 2 rather than a 1
+                child_index = i
+                s = i
+                s += 1
+                ne_op_in = str_t.find('(', s)
+                ne_cl_in = str_t.find(')', s)
+                while open_paren_count > 0:
+                    print "open_paren_count: ", open_paren_count
+                    # found another open
+                    if (ne_cl_in > ne_op_in):
+                        open_paren_count += 1
+                    else:
+                        open_paren_count -= 1
+                        if open_paren_count == 0:
+                            next_index = ne_cl_in+1
+                            break
+                    s += 1
+                    ne_op_in = str_t.find('(', s)
+                    ne_cl_in = str_t.find(')', s)
+            else:
+                child_index = i
+                next_index = str_t.find('|', i)+1
+
+            if child_index != next_index:
+                children.append(str_t[child_index:next_index])
+
+    children = filter(None, children)
+    return children
+        # str.find(str, beg=0, end=len(string))
+
+def string_permutations_of_EG_tree(t):
+    permutations = []
+    str_t = t.to_string_tree()
+    ch_list = children_of(str_t)
+    print "childresn!!!: ", ch_list 
+
+    permutation_indicies = permutate(len(ch_list))
+    print "permutation_indicies: ", permutation_indicies
+
+    for perm in permutation_indicies:
+        build = ""
+        for p in perm:
+            build += ch_list[p-1]
+        permutations.append(build)
+
+    # permutations.append(t.to_string_tree())
+
+    return permutations
+
+
+
 # compare function:
 # input: two existential statements
 # returns true if EG equivelent
 # otherwise false
 def compare_EG_trees(eg_tree_1, eg_tree_2):
-    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
-        return True
+    test = permutate(3)
+    print "test 3: ", test
+    permutations = string_permutations_of_EG_tree(eg_tree_2)
+    print "permutations"
+    for p in permutations:
+        print p
+        if eg_tree_1.to_string_tree() == p:
+            return True
     return False
