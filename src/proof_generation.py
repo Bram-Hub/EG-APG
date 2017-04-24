@@ -8,8 +8,23 @@ import sys
 def remove_literal(literal, tree, out_file):
     return False
 
+# Helper function - removes any double cuts found in the tree
+def remove_dc_from_tree(tree, out_file):
+    # Note: changed the implementation of remove double cut to just remove one thing at a time
+    # try to implement this function iteratively - how to properly link up the nodes
+    tree_ptr = tree
+    while not isinstance(tree_ptr, EGAtom) or not isinstance(tree_ptr, EGEmptyCut):
+        if isinstance(tree_ptr, SheetAssignment) or isinstance(tree_ptr, EGAnd):
+    return False
+
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
+    # First clean up double cuts from the entire Tree
+    update_tree = remove_dc_from_tree(tree, out_file)
+
+    # Second look for empty cuts in a set of children and if at least one is found
+    # then remove the parent and all of its children
+
     return False
 
 # Converts the premises tree into the format needed for conducting the proof

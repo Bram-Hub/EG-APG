@@ -12,27 +12,38 @@ def node_of_cut_to_add(node_to_dc):
     outer_neg = EGNegation(inner_neg)
     return outer_neg
 
+# Usage note: if attempting to deiterate on an OR, IMPLICATION, BICONDITIONAL
+# statement, then pass in a '0' for the left child or a '1' for the right child
 # Pass in the parent of the node that is the outer layer of the DC
-# Will remove an double cuts present in the children
+# Will remove a single double cut specified by the index
 # Returns the modified parent that no longer contains the double cut
-def node_of_cut_to_rm(parent):
+def node_of_cut_to_rm(parent, index_to_rm_double_cut):
     # Should not ever pass in an atom or empty cut statement as they will never
     # have double cuts
     if not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
         # In both of these cases, each child could potentially contain a double cut
         if isinstance(parent, EGAnd) and isinstance(parent, SheetAssignment):
-            children = parent.children
-            for i in range(0, len(children)):
-                child = children[i]
-                # Check if the child is a negation statement (outer cut)
-                if isinstance(child, EGNegation):
-                    # Check if the child's child is a negation statement (inner cut)
-                    if isinstance(child.child, EGNegation):
-                        new_child = child.child.child # Save whatever is inside the double cut
-                        parent.replace_child(new_child, i) # By moving the child, should be removing the DC
-                    # If it's just a negation of an empty cut, just delete the child
-                    elif isinstance(child.child, EGEmptyCut):
-                        parent.remove_child(i)
+            # children = parent.children
+            # for i in range(0, len(children)):
+            #     child = children[i]
+            #     # Check if the child is a negation statement (outer cut)
+            #     if isinstance(child, EGNegation):
+            #         # Check if the child's child is a negation statement (inner cut)
+            #         if isinstance(child.child, EGNegation):
+            #             new_child = child.child.child # Save whatever is inside the double cut
+            #             parent.replace_child(new_child, i) # By moving the child, should be removing the DC
+            #         # If it's just a negation of an empty cut, just delete the child
+            #         elif isinstance(child.child, EGEmptyCut):
+            #             parent.remove_child(i)
+            child = parent.children[index_to_rm_double_cut]
+            if isinstance(child, EGNegation):
+                # Check if the child's child is a negation statement (inner cut)
+                if isinstance(child.child, EGNegation):
+                    new_child = child.child.child # Save whatever is inside the double cut
+                    parent.replace_child(new_child, index_to_rm_double_cut) # By moving the child, should be removing the DC
+                # If it's just a negation of an empty cut, just delete the child
+                elif isinstance(child.child, EGEmptyCut):
+                    parent.remove_child(index_to_rm_double_cut)
         elif isinstance(parent, EGNegation):
             child = parent.child
             # Check if the Negation contains a DC as children
@@ -42,22 +53,41 @@ def node_of_cut_to_rm(parent):
                     parent.replace_child(new_child)
                 elif isinstance(child.child, EGEmptyCut):
                     parent.replace_child(None)
+            if isinstance(child, EGEmptyCut):
+                parent = None
         else:
-            left_child = parent.left
-            right_child = parent.right
-            # Check left child for DC
-            if isinstance(left_child, EGNegation):
-                if isinstance(left_child.child, EGNegation):
-                    new_child = left_child.child.child
-                    parent.left.replace_left_child(new_child)
-                elif isinstance(left_child.child, EGEmptyCut):
-                    parent.left.replace_left_child(None)
-            if isinstance(right_child, EGNegation):
-                if isinstance(left_child.child, EGNegation):
-                    new_child = right_child.child.child
-                    parent.right.replace_right_child(new_child)
-                elif isinstance(right_child.child, EGEmptyCut):
-                    parent.replace_right_child(None)
+            # left_child = parent.left
+            # right_child = parent.right
+            # # Check left child for DC
+            # if isinstance(left_child, EGNegation):
+            #     if isinstance(left_child.child, EGNegation):
+            #         new_child = left_child.child.child
+            #         parent.left.replace_left_child(new_child)
+            #     elif isinstance(left_child.child, EGEmptyCut):
+            #         parent.left.replace_left_child(None)
+            # if isinstance(right_child, EGNegation):
+            #     if isinstance(left_child.child, EGNegation):
+            #         new_child = right_child.child.child
+            #         parent.right.replace_right_child(new_child)
+            #     elif isinstance(right_child.child, EGEmptyCut):
+            #         parent.replace_right_child(None)
+            if index_to_rm_double_cut == 0:
+                left_child = parent.left
+                if isinstance(left_child, EGNegation):
+                    if isinstance(left_child.child, EGNegation):
+                        new_child = left_child.child.child
+                        parent.left.replace_left_child(new_child)
+                    elif isinstance(left_child.child, EGEmptyCut):
+                        parent.left.replace_left_child(None)
+            elif index_to_rm_double_cut == 1:
+                right_child = parent.right
+                if isinstance(right_child, EGNegation):
+                    if isinstance(left_child.child, EGNegation):
+                        new_child = right_child.child.child
+                        parent.right.replace_right_child(new_child)
+                    elif isinstance(right_child.child, EGEmptyCut):
+                        parent.replace_right_child(None)
+
     return parent
 
 # Pass in the parent (root) of the node of where to insert the iteration and the thing to iterate
