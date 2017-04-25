@@ -449,9 +449,12 @@ def string_permutations_of_EG_tree(t):
 # returns true if EG equivelent
 # otherwise false
 def compare_EG_trees(eg_tree_1, eg_tree_2):
+    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
+        return True
+    return False
     test = permutate(3)
     # print "test 3: ", test
-    # permutations = string_permutations_of_EG_tree(eg_tree_2)
+    permutations = string_permutations_of_EG_tree(eg_tree_2)
     print "permutations"
     for p in permutations:
         print p
