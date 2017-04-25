@@ -6,7 +6,42 @@ import sys
 
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
-    return False
+    # if literal is an atom
+    # Base Case 1: tree is the atom
+                # return None
+    # Base Case 2:
+    # Other Case: node has children, remove the and of the children who have gotten remove_literal
+
+    if isinstance(literal, EGNegation):
+        # Case when literal is a negation
+
+    else:
+        # Case when literal is an Atom
+
+    # Base Case - if the tree is just an atom, check if it's the literal
+    if isinstance(tree, EGAtom):
+        if compare_EG_trees(tree, literal):
+            return None
+    elif isinstance(tree, EGEmptyCut):
+        return tree
+
+    elif isinstance(tree, EGNegation):
+
+        else:
+            tree = remove_dc_from_tree(tree, out_file)
+    elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        for i in range(0, tree.num_children()):
+            # Update the parent, which is an SA or AND statement, with all the children with no double cuts
+            tree.replace_child(remove_dc_from_tree(tree.children[i], out_file), i)
+    else:
+        left_child = remove_dc_from_tree(tree.left, out_file)
+        right_child = remove_dc_from_tree(tree.right, out_file)
+
+        # In order to be an OR statement, have to contain the internal structure of two negations
+        # So if it doesn't, then need to change the general structure
+        # Safest to make it into a negation of an and statements
+        
+    return tree
 
 # Should return a sub-tree containing with no double cuts
 def remove_dc_from_tree(tree, out_file):
