@@ -114,18 +114,24 @@ def remove_literal(literal, tree, out_file):
 # Helper function - removes any double cuts found in the tree
 # Should return a sub-tree containing with no double cuts
 def remove_dc_from_tree(tree, out_file):
+    print "In remove double cuts from tree.  Here is tree:"
+    print tree
+    print_eg_tree(tree)
     # Base Case - if an atom or empty cut, just return it
-    if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
+    if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut) or tree == None:
         return tree
     # Base Case 2 - if a negation statement, then check to see if any double cuts can be removed
     elif isinstance(tree, EGNegation):
         tree = node_of_cut_to_rm(tree, 0)
+        print "In Negation check... Here is the tree after remove dc function:"
+        print_eg_tree(tree)
+        return tree
         # If it stayed as a negation then just check its child for dc
-        if isinstance(tree, EGNegation):
-            tree = remove_dc_from_tree(tree.child, out_file)
-        # If it was altered and no longer a negation, then check if the new structure contains any double cuts
-        else:
-            tree = remove_dc_from_tree(tree, out_file)
+        # if isinstance(tree, EGNegation):
+        #     tree = remove_dc_from_tree(tree.child, out_file)
+        # # If it was altered and no longer a negation, then check if the new structure contains any double cuts
+        # else:
+        #     tree = remove_dc_from_tree(tree, out_file)
     elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
         for i in range(0, tree.num_children):
             # Update the parent, which is an SA or AND statement, with all the children with no double cuts
@@ -138,14 +144,20 @@ def remove_dc_from_tree(tree, out_file):
         old_children = [left_child, right_child]
         new_child = EGAnd(2, old_children)
         tree = EGNegation(new_child)
+    # print "Here is the result: "
+    # print tree
     return tree
 
 # Helper function - check if there are any empty cuts in a subtree and remove that subtree
 # Idea is that only the immediate parent of the empty cut gets removed (entire structure)
 # but that's it
 def remove_empty_cuts(tree, out_file):
+    print "In remove empty cuts:"
+    print tree
+    print_eg_tree(tree)
+
     # Base case:  tree is the empty cut or an atom
-    if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom):
+    if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom) or tree == None:
         return tree
     elif isinstance(tree, EGNegation):
         result = remove_empty_cuts(tree.child, out_file)
@@ -155,21 +167,24 @@ def remove_empty_cuts(tree, out_file):
             return None
     elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
         found_empty = False
-        for i in range(0, tree.num_children):
+        i = 0
+        while i < tree.num_children:
             result = remove_empty_cuts(tree.children[i], out_file)
             if result == None:
                 tree.remove_child(i)
+                i -= 1
             # If one of the children is an empty cut, then just get rid of the parent
             elif isinstance(result, EGEmptyCut):
                 found_empty = True
                 break
             else:
                 tree.replace_child(result, i)
+                i += 1
         if found_empty == True:
             return None
     else:
-        left_child = remove_empty_cuts(tree, out_file)
-        right_child = remove_empty_cuts(tree, out_file)
+        left_child = remove_empty_cuts(tree.left, out_file)
+        right_child = remove_empty_cuts(tree.right, out_file)
 
         # This case shouldn't happen, but if it does, should propagate up the tree
         if left_child == None and right_child == None:
@@ -196,12 +211,22 @@ def remove_empty_cuts(tree, out_file):
 
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
-    # First clean up double cuts from the entire Tree
+    print "In clean up. Here is the tree:"
+    print_eg_tree(tree)
+
+    # First clean up double cuts from the entire tree
+    print "Removing double cuts from tree..."
     update_tree = remove_dc_from_tree(tree, out_file)
+
+    print "Tree without double cuts:"
+    print_eg_tree(update_tree)
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
+    print "Removing empty cuts from tree..."
     update_tree = remove_empty_cuts(tree, out_file)
+    print "Tree without empty cuts:"
+    print_eg_tree(update_tree)
 
     return update_tree
 
@@ -251,30 +276,39 @@ def eg_cons(eg_tree, out_file):
     # If after clean up, None is returned then that means the premises and goal
     # aren't consistent
     if eg_tree == None:
+        print "EG_CONS: In case 1."
         sys.exit("Inconsistent premises and goal! Exiting...")
     # If the only thing that is left on the sheet of assignment is an empty cut,
     # then return an empty cut and end the function
-    elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and \
-        ((isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation)) \
-        and eg_tree.children[0].child == None)):
+    # Can ignore whether or not we have sheet of assignment - the root should be considered an EGEmptyCut or EGNegation with 0 children
+    elif isinstance(eg_tree, EGEmptyCut) or \
+        (isinstance(eg_tree, EGNegation) and eg_tree.child == None):
+        print "EG_CONS: In case 2. This is the tree: "
+        print_eg_tree(eg_tree)
         return EGEmptyCut()
     # Case if left with a negation of an and with a literal and a blob of stuff
     # Remove the literal from the blob and call eg_cons on it after clean up
     # If not in this structure, then assumed that something went wrong, and program terminates
-    elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1:
-        old_child = eg_tree.children[0]
+    elif isinstance(eg_tree, EGNegation) and isinstance(eg_tree.child, EGAnd):
+        print "EG_CONS: In case 3.  This is the tree: "
+        print_eg_tree(eg_tree)
+        old_child = eg_tree
         if isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd):
             if old_child.child.num_children == 2:
-                if isinstance(old_child.child.children[0], EGAtom):
+                if isinstance(old_child.child.children[0], EGAtom) or \
+                    (isinstance(old_child.child.children[0], EGNegation) and \
+                    isinstance(old_child.child.children[0].child, EGAtom)):
                     temp = remove_literal(old_child.child.children[0], old_child.child.children[1], out_file)
                     temp = cleanup(temp, out_file)
-                    eg_tree.replace_child(temp, 0)
-                    return eg_cons(eg_tree, out_file)
-                elif isinstance(old_child.children[1], EGAtom):
-                    temp = remove_literal(old_child.children[1], old_child.children[0], out_file)
+                    eg_tree.child.replace_child(temp, 0)
+                    return eg_cons(eg_tree.child.children[0], out_file)
+                elif isinstance(old_child.child.children[1], EGAtom) or \
+                    (isinstance(old_child.child.children[1], EGNegation) and \
+                    isinstance(old_child.child.children[1].child, EGAtom)):
+                    temp = remove_literal(old_child.child.children[1], old_child.child.children[0], out_file)
                     temp = cleanup(temp, out_file)
-                    eg_tree.replace_child(temp, 0)
-                    return eg_cons(eg_tree, out_file)
+                    eg_tree.child.replace_child(temp, 1)
+                    return eg_cons(eg_tree.child.children[1], out_file)
                 else:
                     print_eg_tree(eg_tree)
                     sys.exit("Missing a literal for this case for eg_cons!")
@@ -286,37 +320,119 @@ def eg_cons(eg_tree, out_file):
                 sys.exit("Incorrectly formatted tree for the 3rd case in eg_cons!")
     # Case if there are 2 or more premises remaining, then setup all of the premises,
     # run the clean up function on it, then call eg_cons on each of the remaining premises
-    elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 2:
-        if isinstance(eg_tree.children[0], EGNegation) and isinstance(eg_tree.children[0].child, EGAnd):
-            premises = eg_tree.children[0]
-            blob = eg_tree.children[1]
-            # Double cut all premises and iterate the blob into the outer level of each double cut
-            for i in range(0, premises.child.num_children):
-                dc_child = node_of_cut_to_add(premises.child.children[i])
-                dc_child = iterate(dc_child, blob) # Should just update the double cut with the blob inside it
-                premises.child.replace_child(dc_child, i)
-            # Erase the outer blob
-            eg_tree.remove_child(1)
-            eg_tree.replace_child(premises, 0)
-            for i in range(0, premises.child.num_children):
-                return eg_cons(premises.child.children[i], out_file) # Hopefully will terminate -> should just return an empty cut
-        elif isinstance(eg_tree.children[1], EGNegation) and isinstance(eg_tree.children[1].child, EGAnd):
-            premises = eg_tree.children[1]
-            blob = eg_tree.children[0]
-            # Double cut all premises and iterate the blob into the outer level of each double cut
-            for i in range(0, premises.child.num_children):
-                dc_child = node_of_cut_to_add(premises.child.children[i])
-                dc_child = iterate(dc_child, blob) # Should just update the double cut with the blob inside it
-                premises.child.replace_child(dc_child, i)
-            # Erase the outer blob
-            eg_tree.remove_child(0)
-            eg_tree.replace_child(premises, 0)
-            for i in range(0, premises.child.num_children):
-                temp_child = cleanup(premises.child.children[i], out_file)
-                return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
+    # Should assume that theres always some kind of AND at the base of every SA
+    # Structure: SA
+    #            |
+    #           SA
+    #          /  \
+    #        NEG  BLOB
+    #         |     |
+    #        SA    {}
+    elif (isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and isinstance(eg_tree.children[0], EGAnd)) \
+        or (isinstance(eg_tree, EGAnd) and eg_tree.children.num_children == 2):
+        print "EG_CONS: In case 4.  Current tree:"
+        print_eg_tree(eg_tree.children[0])
+        new_root = eg_tree.children[0] # Should be EGAnd
+        # Check if the premises are on the left side
+        premise_index = 0
+        premise_index = 1
+        if isinstance(new_root.children[0], EGNegation) and isinstance(new_root.children[0].child, EGAnd):
+            premise_index = 0
+            blob_index = 1
+        elif isinstance(new_root.children[1], EGNegation) and isinstance(new_root.children[1].child, EGAnd):
+            premise_index = 1
+            blob_index = 0
         else:
             print_eg_tree(eg_tree)
             sys.exit("Incorrectly formatted tree for the 4th case in eg_cons!")
+
+        print "Premises:"
+        premises = new_root.children[premise_index] # Set it equal to the negation of the AND
+        print_eg_tree(premises)
+        print "Blob:"
+        blob = new_root.children[blob_index]
+        print_eg_tree(blob)
+        # Double cut all premises and iterate the blob into the outer level of each double cut
+        i = 0
+        while i < premises.child.num_children:
+            print i
+            print "Child:"
+            print premises.child.children[i]
+            if i < 0:
+                i = 0
+            # Not sure why there's just a None child in the list of premises - need to check if that's right
+            if premises.child.children[i] != None:
+                # For the inner and representing the original premises
+                # Remember to double cut the goal which is outside of this and bc it's treated as another premise
+                # At the moment the blob and the negated goal are identical but still need to iterate
+                temp = premises.child.children[i]
+                print "This is temp"
+                print temp
+                print_eg_tree(temp)
+                prev = None
+                # Skip through all the top level and statements to get to the actual premises of the proof
+                while isinstance(temp, EGAnd) and temp.num_children == 1:
+                    print "HERE"
+                    prev = temp
+                    temp = temp.children[0]
+                # If there is only one premise, then double cut on just that node
+                if not isinstance(temp, EGAnd) and prev != None:
+                    temp = prev
+
+                print prev
+                # No outer AND or only one level of AND
+                if prev == None and not isinstance(temp, EGAnd):
+                    dc_child = node_of_cut_to_add(temp)
+                    temp2 = iterate(dc_child, blob)
+                    temp = temp2
+                else:
+                    # Base layer AND statement found, now double cut all premises
+                    for j in range(0, temp.num_children):
+                        # Double cut all the original premises
+                        dc_child = node_of_cut_to_add(temp.children[j])
+                        print "Added double cut:"
+                        print_eg_tree(dc_child)
+                        # Insert the blob to the outer layer of each double cut
+                        temp2 = iterate(dc_child, blob)
+                        print "Finished child:"
+                        print_eg_tree(temp2)
+                        temp.replace_child(temp2, j)
+                print "Added DC and blob:"
+                print_eg_tree(temp)
+                # Link back up to the original tree
+                premises.child.replace_child(temp, i)
+                i += 1
+            else:
+                premises.child.remove_child(i)
+                i -= 1
+        print "Completed updating all premises:"
+        print_eg_tree(premises.child)
+
+        # Erase the outer blob
+        new_root.remove_child(blob_index)
+        print "Removed the outer blob: "
+        print_eg_tree(new_root)
+
+        # Replace the old children with updated ones (have the dc and blob)
+        new_root.replace_child(premises, premise_index)
+        print "Replaced old children: "
+        print_eg_tree(new_root)
+
+        print "This is a temp child:"
+        print_eg_tree(premises.child.children[0])
+        print premises.child.num_children
+        print "This is the other temp child:"
+        print_eg_tree(premises.child.children[1])
+        # Clean up each child and run eg_cons on each premise
+        for i in range(0, premises.child.num_children):
+            if isinstance(premises.child.children[i], EGAnd):
+                # Make sure to loop through individual premises and call recursively
+                for j in range(0, premises.child.children[i].num_children):
+                    temp_child = cleanup(premises.child.children[i].children[j], out_file)
+                    return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
+            else:
+                temp_child = cleanup(premises.child.children[i], out_file)
+                return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
     else:
         print_eg_tree(eg_tree)
         sys.exit("Incorrectly formatted tree for eg_cons!")
@@ -345,6 +461,9 @@ def find_proof(premises, goal):
     lst = []
     lst.append(setup_tree.children[1].child)
     inner_SA = SheetAssignment(1, lst)
+
+    print "This is inner SA:"
+    print_eg_tree(inner_SA)
 
     # Run consistency algorithm to determine proof
     final_tree = eg_cons(inner_SA, out_file)

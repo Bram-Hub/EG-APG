@@ -18,9 +18,13 @@ def node_of_cut_to_add(node_to_dc):
 # Will remove a single double cut specified by the index
 # Returns the modified parent that no longer contains the double cut
 def node_of_cut_to_rm(parent, index_to_rm_double_cut):
+    # print "In Node of cut to remove... Here is the tree:"
+    # print parent
+    # print_eg_tree(parent)
     # Should not ever pass in an atom or empty cut statement as they will never
     # have double cuts
     if not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
+        # print "Here"
         # In both of these cases, each child could potentially contain a double cut
         if isinstance(parent, EGAnd) and isinstance(parent, SheetAssignment):
             # children = parent.children
@@ -46,16 +50,23 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                     parent.remove_child(index_to_rm_double_cut)
         elif isinstance(parent, EGNegation):
             child = parent.child
+            # print "Here in node to remove dc Negation:"
+            # print print_eg_tree(child)
+            # print child
             # Check if the Negation contains a DC as children
             if isinstance(child, EGNegation):
+                # print "HERE 1"
                 # For the case of a triple negation
                 if isinstance(child.child, EGNegation):
+                    # print "HERE 2"
                     new_child = child.child.child
                     parent.replace_child(new_child)
                 elif isinstance(child.child, EGEmptyCut):
+                    # print "HERE 3"
                     parent.replace_child(None)
                 # For the case of a standard double negation
                 else:
+                    # print "HERE 4"
                     parent = child.child
             if isinstance(child, EGEmptyCut):
                 parent = None
