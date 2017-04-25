@@ -250,13 +250,12 @@ def eg_cons(eg_tree, out_file):
     # Assumption of program (for now) is that the proof provided is valid
     # If after clean up, None is returned then that means the premises and goal
     # aren't consistent
-    print eg_tree
     if eg_tree == None:
         sys.exit("Inconsistent premises and goal! Exiting...")
     # If the only thing that is left on the sheet of assignment is an empty cut,
     # then return an empty cut and end the function
     elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and \
-        (isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation) \
+        ((isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation)) \
         and eg_tree.children[0].child == None)):
         return EGEmptyCut()
     # Case if left with a negation of an and with a literal and a blob of stuff
@@ -343,7 +342,9 @@ def find_proof(premises, goal):
     print "This is the setup tree: "
     print_eg_tree(setup_tree)
 
-    inner_SA = SheetAssignment(1, setup_tree.children[1].child)
+    lst = []
+    lst.append(setup_tree.children[1].child)
+    inner_SA = SheetAssignment(1, lst)
 
     # Run consistency algorithm to determine proof
     final_tree = eg_cons(inner_SA, out_file)
