@@ -141,8 +141,58 @@ def remove_dc_from_tree(tree, out_file):
     return tree
 
 # Helper function - check if there are any empty cuts in a subtree and remove that subtree
+# Idea is that only the immediate parent of the empty cut gets removed (entire structure)
+# but that's it
 def remove_empty_cuts(tree, out_file):
-    return False
+    # Base case:  tree is the empty cut or an atom
+    if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom):
+        return tree
+    elif isinstance(tree, EGNegation):
+        result = remove_empty_cuts(tree.child, out_file)
+        if result == None:
+            tree.replace_child(None)
+        elif isinstance(tree, EGEmptyCut):
+            return None
+    elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        found_empty = False
+        for i in range(0, tree.num_children()):
+            result = remove_empty_cuts(tree.children[i], out_file)
+            if result == None:
+                tree.remove_child(i)
+            # If one of the children is an empty cut, then just get rid of the parent
+            elif isinstance(result, EGEmptyCut):
+                found_empty = True
+                break
+            else:
+                tree.replace_child(result, i)
+        if found_empty == True:
+            return None
+    else:
+        left_child = remove_empty_cuts(tree, out_file)
+        right_child = remove_empty_cuts(tree, out_file)
+
+        # This case shouldn't happen, but if it does, should propagate up the tree
+        if left_child == None and right_child == None:
+            return EGEmptyCut()
+        # If one of the children contained an empty cut and has been removed, then just change this to a
+        # negation of the remaining child
+        elif left_child == None and right_child != None:
+            return EGNegation(right_child)
+        elif not (left_child != None) and right_child == None:
+            return EGNegation(left_child)
+        else:
+            tree.replace_left_child(left_child)
+            tree.replace_right_child(right_child)
+            return tree
+
+        # If one of the children contains an empty cut, then remove this structure
+        if isinstance(left_child, EGEmptyCut) or isinstance(right_child, EGEmptyCut):
+            return None
+        else:
+            tree.replace_left_child(left_child)
+            tree.replace_right_child(right_child)
+            return tree
+    return tree
 
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
@@ -153,7 +203,7 @@ def cleanup(tree, out_file):
     # then remove the parent and all of its children
     update_tree = remove_empty_cuts(tree, out_file)
 
-    return False
+    return update_tree
 
 # Converts the premises tree into the format needed for conducting the proof
 # Also includes the setup files in the output file
