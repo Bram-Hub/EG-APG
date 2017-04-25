@@ -6,6 +6,7 @@ import sys
 
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
+    print "remove_literal", literal, tree
 # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ###
 # Cases that need to be considered:
 #         EGAtom, EGNegation, SheetAssignment, EGEmptyCut, **EGAnd**
@@ -47,7 +48,9 @@ def remove_literal(literal, tree, out_file):
             new_children = []
             # for each child, apply remove_literal recursively
             for i in range(0, tree.num_children):
-                new_children.append(remove_literal(literal, tree.children[i], out_file))
+                new_child = remove_literal(literal, tree.children[i], out_file)
+                if new_child != None:
+                    new_children.append(new_child)
             return EGAnd(len(new_children), new_children)
         # Case A: Everything else Case
         else:
@@ -89,6 +92,7 @@ def remove_literal(literal, tree, out_file):
             # for each child, apply remove_literal recursively
             for i in range(0, tree.num_children):
                 new_child = remove_literal(literal, tree.children[i], out_file)
+                print "new child: ", new_child
                 if new_child != None:
                     new_children.append(new_child)
             return EGAnd(len(new_children), new_children)
@@ -255,9 +259,11 @@ def eg_cons(eg_tree, out_file):
         sys.exit("Inconsistent premises and goal! Exiting...")
     # If the only thing that is left on the sheet of assignment is an empty cut,
     # then return an empty cut and end the function
-    elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and \
-        (isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation) \
-        and eg_tree.children[0].child == None)):
+    elif isinstance(eg_tree, SheetAssignment) and \
+                    eg_tree.num_children == 1 and \
+                        ((isinstance(eg_tree.children[0], EGEmptyCut) or \
+                        (isinstance(eg_tree.children[0], EGNegation)) \
+                        and eg_tree.children[0].child == None)):
         return EGEmptyCut()
     # Case if left with a negation of an and with a literal and a blob of stuff
     # Remove the literal from the blob and call eg_cons on it after clean up
