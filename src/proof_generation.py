@@ -6,7 +6,110 @@ import sys
 
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
-    return False
+# ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### 
+# Cases that need to be considered: 
+#         EGAtom, EGNegation, SheetAssignment, EGEmptyCut, **EGAnd**
+#         and.... maybe None.....
+# Case A: literal is the negation of an atom
+#     Base Case 1: EGAtom or EGEmptyCut: return tree (nothing we wanna change)
+#     Base Case 2: EGNegation: has chance of being the literal, if it is, return None, if not, return tree (we don't wanna change it)
+#     Base Case 3: SheetAssignment or EGAnd: do it to the children, return em as siblings
+#     Everything else Case: (or, implicaiton, biconditional): do it to the left and right kids, return em as siblings
+# Case B: literal is an atom
+#     Base Case 1: EGEmptyCut: return tree (nothing we wanna change)
+#     Base Case 2: EGAtom: has chance of being the literal, if it is, return None, if not, return tree (we don't wanna change it)
+#     Base Case 3: EGNegation: do it to the kid, return as a kid
+#     Base Case 4: SheetAssignment or EGAnd: same as above Base Case A3
+#     Everythign else Case: same as above Everything else Case A
+# ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### 
+
+    # assert that the literal is an atom or a negation 
+    # (should also check that the negation is the negation of an atom,
+    # but this is just a sanity check, it doesn't catch everything...)
+    assert ( isinstance(literal, EGNegation) or  isinstance(literal, EGAtom))
+   
+    # Case A: when literal is a negation
+    if isinstance(literal, EGNegation):
+        #asser that the literal is a literal (the negation should have an atom as a child)
+        assert (isinstance(literal.child, EGAtom))
+        # Case A: Base Case 1
+        if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
+            return tree
+        # Case A: Base Case 2
+        elif isinstance(tree, EGNegation):
+            if ( isinstance(tree.child, EGAtom) ):
+                if compare_EG_trees(tree, literal):
+                    return None
+                else:
+                    return tree
+        # Case A: Base Case 3
+        elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+            new_children = []
+            # for each child, apply remove_literal recursively
+            for i in range(0, tree.num_children()):
+                new_children.append(remove_literal(literal, tree.children[i], out_file))
+            return EGAnd(len(new_children), new_children)
+        # Case A: Everything else Case
+        else:
+            # if not catched above, the tree must be an Or, Implication or Biconditional
+            assert( isinstance(tree, EGOr) or \
+                isinstance(tree, EGImplication) or \
+                isinstance(tree, EGBiconditional))
+            # grab the left and right child after remove literal on them
+            left_child = remove_literal(tree.left, out_file)
+            right_child = remove_literal(tree.right, out_file)
+            # Automatically convert representation to a negation of an AND
+            # Only make it a chile, if it isn't None
+            if left_child != None:
+                old_children.append(left_child)
+            if right_child != None:
+                old_children.append(right_child)
+            new_child = EGAnd(len(old_children), old_children)
+            tree = EGNegation(new_child)
+    
+    # Case B: when literal is an Atom
+    else:
+        # Case B: Base Case 1
+        if isinstance(tree, EGEmptyCut):
+            return tree
+        # Case B: Base Case 2
+        elif isinstance(tree, EGAtom):
+            if compare_EG_trees(tree, literal):
+                return None
+        # Case B: Base Case 3
+        elif isinstance(tree, EGNegation):
+            only_child = remove_literal(literal, tree.child, out_file)
+            if only_child == None:
+                return EGEmptyCut()
+            else:
+                return EGNegation(only_child)
+        # Case B: Base Case 4
+        elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+            new_children = []
+            # for each child, apply remove_literal recursively
+            for i in range(0, tree.num_children()):
+                new_child = remove_literal(literal, tree.children[i], out_file)
+                if new_child != None:
+                    new_children.append(new_child)
+            return EGAnd(len(new_children), new_children)
+        # Case B: Everything else Case
+        else:
+            # if not catched above, the tree must be an Or, Implication or Biconditional
+            assert( isinstance(tree, EGOr) or \
+                isinstance(tree, EGImplication) or \
+                isinstance(tree, EGBiconditional))
+            # grab the left and right child after remove literal on them
+            left_child = remove_literal(tree.left, out_file)
+            right_child = remove_literal(tree.right, out_file)
+            # Automatically convert representation to a negation of an AND
+            # Only make it a chile, if it isn't None
+            if left_child != None:
+                old_children.append(left_child)
+            if right_child != None:
+                old_children.append(right_child)
+            new_child = EGAnd(len(old_children), old_children)
+            tree = EGNegation(new_child)
+    return tree
 
 # Helper function - removes any double cuts found in the tree
 # Should return a sub-tree containing with no double cuts
