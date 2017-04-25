@@ -48,11 +48,15 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
             child = parent.child
             # Check if the Negation contains a DC as children
             if isinstance(child, EGNegation):
+                # For the case of a triple negation
                 if isinstance(child.child, EGNegation):
                     new_child = child.child.child
                     parent.replace_child(new_child)
                 elif isinstance(child.child, EGEmptyCut):
                     parent.replace_child(None)
+                # For the case of a standard double negation
+                else:
+                    parent = child.child
             if isinstance(child, EGEmptyCut):
                 parent = None
         else:

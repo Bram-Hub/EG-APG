@@ -8,14 +8,54 @@ import sys
 def remove_literal(literal, tree, out_file):
     return False
 
-# Helper function - removes any double cuts found in the tree
+# Should return a sub-tree containing with no double cuts
 def remove_dc_from_tree(tree, out_file):
-    # Note: changed the implementation of remove double cut to just remove one thing at a time
-    # try to implement this function iteratively - how to properly link up the nodes
-    tree_ptr = tree
-    while not isinstance(tree_ptr, EGAtom) or not isinstance(tree_ptr, EGEmptyCut):
-        if isinstance(tree_ptr, SheetAssignment) or isinstance(tree_ptr, EGAnd):
-    return False
+    # Base Case - if an atom or empty cut, just return it
+    if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
+        return tree
+    # Base Case 2 - if a negation statement, then check to see if any double cuts can be removed
+    elif isinstance(tree, EGNegation):
+        tree = node_of_cut_to_rm(tree, 0)
+        # If it stayed as a negation then just check its child for dc
+        if isinstance(tree, EGNegation):
+            tree = remove_dc_from_tree(tree.child, out_file)
+        # If it was altered and no longer a negation, then check if the new structure contains any double cuts
+        else:
+            tree = remove_dc_from_tree(tree, out_file)
+    elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        for i in range(0, tree.num_children()):
+            # Update the parent, which is an SA or AND statement, with all the children with no double cuts
+            tree.replace_child(remove_dc_from_tree(tree.children[i], out_file), i)
+    else:
+        left_child = remove_dc_from_tree(tree.left, out_file)
+        right_child = remove_dc_from_tree(tree.right, out_file)
+
+        # In order to be an OR statement, have to contain the internal structure of two negations
+        # So if it doesn't, then need to change the general structure
+        # Safest to make it into a negation of an and statements
+        
+    return tree
+
+# Helper function - removes any double cuts found in the tree
+# def remove_dc_from_tree(tree, out_file):
+#     # Note: changed the implementation of remove double cut to just remove one thing at a time
+#     # try to implement this function iteratively - how to properly link up the nodes
+#     tree_ptr = tree # How do we get a pointer to the start of the tree again?
+#
+#     # Outer while loop should walk through the entire tree and check for double cuts
+#     while not isinstance(tree_ptr, EGAtom) or not isinstance(tree_ptr, EGEmptyCut):
+#         while not isinstance(tree_ptr, EGAtom) or not isinstance(tree_ptr, EGEmptyCut):
+#             if isinstance(tree_ptr, SheetAssignment) or isinstance(tree_ptr, EGAnd):
+#                 for i in range(0, tree_ptr.num_children()):
+#                     tree_ptr = node_of_cut_to_rm(tree_ptr, i)
+#             elif isinstance(tree_ptr, EGNegation):
+#
+#         # Completed erasing double cuts from any child from current node in the Tree
+#         if isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+#             tree
+#
+#
+#     return False
 
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
