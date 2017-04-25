@@ -1,4 +1,4 @@
-# Contains the main and helper functions used to general proofs for Existential Graphs
+# Contains the main and helper functions used to generate proofs for Existential Graphs
 
 from existential_statement import *
 from rules import *
@@ -144,11 +144,20 @@ def setup(premises, goal, out_file):
 # goal are consistent with one another -> will also generate the proof in the
 # output file that can be loaded into Pegasus
 def eg_cons(eg_tree, out_file):
+    # Assumption of program (for now) is that the proof provided is valid
+    # If after clean up, None is returned then that means the premises and goal
+    # aren't consistent
     if eg_tree == None:
         sys.exit("Inconsistent premises and goal! Exiting...")
+    # If the only thing that is left on the sheet of assignment is an empty cut,
+    # then return an empty cut and end the function
     elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children() == 1 and \
-        (isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation) and eg_tree.children[0].child == None)):
+        (isinstance(eg_tree.children[0], EGEmptyCut) or (isinstance(eg_tree.children[0], EGNegation) \
+        and eg_tree.children[0].child == None)):
         return EGEmptyCut()
+    # Case if left with a negation of an and with a literal and a blob of stuff
+    # Remove the literal from the blob and call eg_cons on it after clean up
+    # If not in this structure, then assumed that something went wrong, and program terminates
     elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children() == 1:
         old_child = eg_tree.children[0]
         if isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd):
@@ -172,6 +181,8 @@ def eg_cons(eg_tree, out_file):
         else:
                 print_eg_tree(eg_tree)
                 sys.exit("Incorrectly formatted tree for the 3rd case in eg_cons!")
+    # Case if there are 2 or more premises remaining, then setup all of the premises,
+    # run the clean up function on it, then call eg_cons on each of the remaining premises
     elif isinstance(eg_tree, SheetAssignment) and eg_tree.num_children() == 2:
         if isinstance(eg_tree.children[0], EGNegation) and isinstance(eg_tree.children[0].child, EGAnd):
             premises = eg_tree.children[0]
