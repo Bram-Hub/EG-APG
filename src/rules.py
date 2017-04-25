@@ -27,18 +27,6 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
         # print "Here"
         # In both of these cases, each child could potentially contain a double cut
         if isinstance(parent, EGAnd) and isinstance(parent, SheetAssignment):
-            # children = parent.children
-            # for i in range(0, len(children)):
-            #     child = children[i]
-            #     # Check if the child is a negation statement (outer cut)
-            #     if isinstance(child, EGNegation):
-            #         # Check if the child's child is a negation statement (inner cut)
-            #         if isinstance(child.child, EGNegation):
-            #             new_child = child.child.child # Save whatever is inside the double cut
-            #             parent.replace_child(new_child, i) # By moving the child, should be removing the DC
-            #         # If it's just a negation of an empty cut, just delete the child
-            #         elif isinstance(child.child, EGEmptyCut):
-            #             parent.remove_child(i)
             child = parent.children[index_to_rm_double_cut]
             if isinstance(child, EGNegation):
                 # Check if the child's child is a negation statement (inner cut)
@@ -50,9 +38,9 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                     parent.remove_child(index_to_rm_double_cut)
         elif isinstance(parent, EGNegation):
             child = parent.child
-            # print "Here in node to remove dc Negation:"
-            # print print_eg_tree(child)
-            # print child
+            print "Here in node to remove dc Negation:"
+            print print_eg_tree(child)
+            print child
             # Check if the Negation contains a DC as children
             if isinstance(child, EGNegation):
                 # print "HERE 1"
@@ -68,8 +56,11 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                 else:
                     # print "HERE 4"
                     parent = child.child
-            if isinstance(child, EGEmptyCut):
+            elif isinstance(child, EGEmptyCut):
                 parent = None
+            elif child.value == "()":
+                print "HERE"
+                parent = EGAnd(2, [child.left, child.right])
         else:
             # left_child = parent.left
             # right_child = parent.right

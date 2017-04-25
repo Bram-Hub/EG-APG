@@ -224,7 +224,7 @@ def cleanup(tree, out_file):
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
     print "Removing empty cuts from tree..."
-    update_tree = remove_empty_cuts(tree, out_file)
+    update_tree = remove_empty_cuts(update_tree, out_file)
     print "Tree without empty cuts:"
     print_eg_tree(update_tree)
 
@@ -329,7 +329,7 @@ def eg_cons(eg_tree, out_file):
     #         |     |
     #        SA    {}
     elif (isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and isinstance(eg_tree.children[0], EGAnd)) \
-        or (isinstance(eg_tree, EGAnd) and eg_tree.children.num_children == 2):
+        or (isinstance(eg_tree, EGAnd) and eg_tree.num_children == 2):
         print "EG_CONS: In case 4.  Current tree:"
         print_eg_tree(eg_tree.children[0])
         new_root = eg_tree.children[0] # Should be EGAnd
