@@ -9,9 +9,14 @@ def remove_literal(literal, tree, out_file):
     # if literal is an atom
     # Base Case 1: tree is the atom
                 # return None
-    # Base Case 2:
-    # Other Case: node has children, remove the and of the children who have gotten remove_literal
-
+    # Base Case 2: tree is empty cut
+                # return empty cut
+    # Other Case: node has children, and of the children who have gotten remove_literal
+            # if it's an AND then construct egand on modified children
+            # if it's an OR,
+            # IMPLICATION,
+            # BICONDITIONAL,
+                # return 
     if isinstance(literal, EGNegation):
         # Case when literal is a negation
 
