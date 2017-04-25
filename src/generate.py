@@ -3,6 +3,7 @@ from existential_statement import *
 from parse_tree import parse_sentence
 from rules import *
 from proof_generation import find_proof
+import proof_generation as pg
 import sys
 
 # Note this only takes in one line at a time, so for multiple premises,
@@ -112,6 +113,14 @@ print_tree_pegasus_style(goal_tree)
 # testing compare : should make more tests for like if extra SA's
 #print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
 # print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
+
+# testing remove_literal(literal, tree, out_file) :
+out_file = open('output-test.pega', 'w')
+testing_temp = pg.remove_literal(EGAtom("P"), EGAnd(2, [EGAtom("P"), EGAtom("Q")]), out_file)
+
+print " ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** "
+print " expect just Q: ", print_tree_pegasus_style(testing_temp), "  <<< that's what I get... "
+
 
 # uncomment when find_proof happens
 find_proof(final_premise_tree, goal_tree)
