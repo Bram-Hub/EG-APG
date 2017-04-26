@@ -347,12 +347,12 @@ def permutate(n):
         return p
     else:
         temp = permutate(n-1)
-        # print "temp: ", temp
+        print "temp: ", temp
         end = len(temp)
         build = []
         for j in range (end):
             for i in range (n-1):
-                # print "j: ", j, " i:",i
+                print "j: ", j, " i:",i
                 build.extend(temp[j][0:i])
                 build.append(n)
                 build.extend(temp[j][i:end])
@@ -402,7 +402,7 @@ def children_of(str_t):
                 ne_op_in = str_t.find('(', s)
                 ne_cl_in = str_t.find(')', s)
                 while open_paren_count > 0:
-                    # print "open_paren_count: ", open_paren_count
+                    print "open_paren_count: ", open_paren_count
                     # found another open
                     if (ne_cl_in > ne_op_in):
                         open_paren_count += 1
@@ -432,7 +432,7 @@ def string_permutations_of_EG_tree(t):
     print "childresn!!!: ", ch_list
 
     permutation_indicies = permutate(len(ch_list))
-    # print "permutation_indicies: ", permutation_indicies
+    print "permutation_indicies: ", permutation_indicies
 
     for perm in permutation_indicies:
         build = ""
@@ -449,11 +449,8 @@ def string_permutations_of_EG_tree(t):
 # returns true if EG equivelent
 # otherwise false
 def compare_EG_trees(eg_tree_1, eg_tree_2):
-    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
-        return True
-    return False
     test = permutate(3)
-    # print "test 3: ", test
+    print "test 3: ", test
     permutations = string_permutations_of_EG_tree(eg_tree_2)
     print "permutations"
     for p in permutations:

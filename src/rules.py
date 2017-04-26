@@ -18,13 +18,14 @@ def node_of_cut_to_add(node_to_dc):
 # Will remove a single double cut specified by the index
 # Returns the modified parent that no longer contains the double cut
 def node_of_cut_to_rm(parent, index_to_rm_double_cut):
-    # print "In Node of cut to remove... Here is the tree:"
+    print "In Node of cut to remove... Here is the tree:"
     # print parent
     # print_eg_tree(parent)
     # Should not ever pass in an atom or empty cut statement as they will never
     # have double cuts
     if not isinstance(parent, EGAtom) or not isinstance(parent, EGEmptyCut):
-        # print "Here"
+        # print "Has a case"
+        # print type(parent)
         # In both of these cases, each child could potentially contain a double cut
         if isinstance(parent, EGAnd) and isinstance(parent, SheetAssignment):
             child = parent.children[index_to_rm_double_cut]
@@ -38,9 +39,8 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                     parent.remove_child(index_to_rm_double_cut)
         elif isinstance(parent, EGNegation):
             child = parent.child
-            print "Here in node to remove dc Negation:"
-            print print_eg_tree(child)
-            print child
+            # print "Here in node to remove dc Negation:"
+            # print_eg_tree(child)
             # Check if the Negation contains a DC as children
             if isinstance(child, EGNegation):
                 # print "HERE 1"
@@ -57,10 +57,13 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                     # print "HERE 4"
                     parent = child.child
             elif isinstance(child, EGEmptyCut):
+                # print "HERE 5"
                 parent = None
             elif child.value == "()":
-                print "HERE"
+                # print "HERE"
                 parent = EGAnd(2, [child.left, child.right])
+            else:
+                print "Nothing to do..."
         else:
             # left_child = parent.left
             # right_child = parent.right
