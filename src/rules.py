@@ -63,21 +63,6 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
                 # print "HERE"
                 parent = EGAnd(2, [child.left, child.right])
         else:
-            # left_child = parent.left
-            # right_child = parent.right
-            # # Check left child for DC
-            # if isinstance(left_child, EGNegation):
-            #     if isinstance(left_child.child, EGNegation):
-            #         new_child = left_child.child.child
-            #         parent.left.replace_left_child(new_child)
-            #     elif isinstance(left_child.child, EGEmptyCut):
-            #         parent.left.replace_left_child(None)
-            # if isinstance(right_child, EGNegation):
-            #     if isinstance(left_child.child, EGNegation):
-            #         new_child = right_child.child.child
-            #         parent.right.replace_right_child(new_child)
-            #     elif isinstance(right_child.child, EGEmptyCut):
-            #         parent.replace_right_child(None)
             if index_to_rm_double_cut == 0:
                 left_child = parent.left
                 if isinstance(left_child, EGNegation):
