@@ -114,13 +114,14 @@ print_tree_pegasus_style(goal_tree)
 #print "expect true (1): ", compare_EG_trees(premise_trees[0], premise_trees[0])
 # print "expect false (0): ", compare_EG_trees(premise_trees[0], premise_trees[1])
 
-# testing remove_literal(literal, tree, out_file) :
-out_file = open('output-test.pega', 'w')
-testing_temp = pg.remove_literal(EGAtom("P"), EGAnd(2, [EGAtom("P"), EGAtom("Q")]), out_file)
-
-print " ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** "
-print " expect just Q: ", print_tree_pegasus_style(testing_temp), "  <<< that's what I get... "
-
 
 # uncomment when find_proof happens
-find_proof(final_premise_tree, goal_tree)
+# find_proof(final_premise_tree, goal_tree)
+
+
+# testing remove_literal(literal, tree, out_file) :
+print "\n***** ***** ***** ***** ***** ***** ***** ***** ***** ***** ***** "
+
+out_file = open('output-test.pega', 'w')
+testing_temp = pg.remove_literal(EGAtom("P"), EGAnd(2, [EGAtom("P"), EGAtom("Q")]), out_file)
+print " expect just Q: ", print_tree_pegasus_style(testing_temp),  print_eg_tree(testing_temp), "  <<< that's what I get... "
