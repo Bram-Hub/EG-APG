@@ -80,6 +80,7 @@ def remove_literal(literal, tree, out_file):
 
     # Case B: when literal is an Atom
     else:
+        print "heeyyooo here"
         # Case B: Base Case 1
         if isinstance(tree, EGEmptyCut):
             return tree
@@ -101,13 +102,16 @@ def remove_literal(literal, tree, out_file):
                 return EGNegation(only_child)
         # Case B: Base Case 4
         elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+            print "gotem"
             new_children = []
             # for each child, apply remove_literal recursively
             for i in range(0, tree.num_children):
                 new_child = remove_literal(literal, tree.children[i], out_file)
+
                 print "THIS IS THE NEW CHILD"
                 print_eg_tree(new_child)
                 if new_child != None:
+                    print "adding new kid: ", new_child
                     new_children.append(new_child)
             print "THIS IS THE NEW CHILDREN"
             print new_children
