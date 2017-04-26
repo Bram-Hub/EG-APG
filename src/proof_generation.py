@@ -616,6 +616,8 @@ def find_proof(premises, goal):
     inner_SA = cleanup(inner_SA, out_file)
     final_tree = eg_cons(inner_SA, out_file)
 
-    print "Completed proof... Here is final tree:"
+    print "Completed EG_Cons part... Here is the tree:"
     print final_tree
     print_eg_tree(final_tree)
+
+    
