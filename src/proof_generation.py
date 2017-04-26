@@ -27,45 +27,56 @@ def remove_literal(literal, tree, out_file):
     # (should also check that the negation is the negation of an atom,
     # but this is just a sanity check, it doesn't catch everything...)
     assert ( isinstance(literal, EGNegation) or  isinstance(literal, EGAtom))
-
+    print "THIS IS THE LITERAL"
+    print_eg_tree(literal)
     # Case A: when literal is a negation
     if isinstance(literal, EGNegation):
         #asser that the literal is a literal (the negation should have an atom as a child)
         assert (isinstance(literal.child, EGAtom))
+        # Hack to move complement of atom to the end of the list of children
+        print "DON'T WANT COMPLEMENT"
+        print_eg_tree(tree)
+        new_literal = tree.children[0]
+        tree.remove_child(0)
+        tree.add_children(literal)
+        print "MOVED TO END"
+        print_eg_tree(tree)
+        tree = remove_literal(new_literal, tree, out_file)
+
         # Case A: Base Case 1
-        if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
-            return tree
-        # Case A: Base Case 2
-        elif isinstance(tree, EGNegation):
-            if ( isinstance(tree.child, EGAtom) ):
-                if compare_EG_trees(tree, literal):
-                    return None
-                else:
-                    return tree
-        # Case A: Base Case 3
-        elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
-            new_children = []
-            # for each child, apply remove_literal recursively
-            for i in range(0, tree.num_children):
-                new_children.append(remove_literal(literal, tree.children[i], out_file))
-            return EGAnd(len(new_children), new_children)
-        # Case A: Everything else Case
-        else:
-            # if not catched above, the tree must be an Or, Implication or Biconditional
-            assert( isinstance(tree, EGOr) or \
-                isinstance(tree, EGImplication) or \
-                isinstance(tree, EGBiconditional))
-            # grab the left and right child after remove literal on them
-            left_child = remove_literal(tree.left, out_file)
-            right_child = remove_literal(tree.right, out_file)
-            # Automatically convert representation to a negation of an AND
-            # Only make it a chile, if it isn't None
-            if left_child != None:
-                old_children.append(left_child)
-            if right_child != None:
-                old_children.append(right_child)
-            new_child = EGAnd(len(old_children), old_children)
-            tree = EGNegation(new_child)
+        # if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
+        #     return tree
+        # # Case A: Base Case 2
+        # elif isinstance(tree, EGNegation):
+        #     if ( isinstance(tree.child, EGAtom) ):
+        #         if compare_EG_trees(tree, literal):
+        #             return None
+        #         else:
+        #             return tree
+        # # Case A: Base Case 3
+        # elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        #     new_children = []
+        #     # for each child, apply remove_literal recursively
+        #     for i in range(0, tree.num_children):
+        #         new_children.append(remove_literal(literal, tree.children[i], out_file))
+        #     return EGAnd(len(new_children), new_children)
+        # # Case A: Everything else Case
+        # else:
+        #     # if not catched above, the tree must be an Or, Implication or Biconditional
+        #     assert( isinstance(tree, EGOr) or \
+        #         isinstance(tree, EGImplication) or \
+        #         isinstance(tree, EGBiconditional))
+        #     # grab the left and right child after remove literal on them
+        #     left_child = remove_literal(tree.left, out_file)
+        #     right_child = remove_literal(tree.right, out_file)
+        #     # Automatically convert representation to a negation of an AND
+        #     # Only make it a chile, if it isn't None
+        #     if left_child != None:
+        #         old_children.append(left_child)
+        #     if right_child != None:
+        #         old_children.append(right_child)
+        #     new_child = EGAnd(len(old_children), old_children)
+        #     tree = EGNegation(new_child)
 
     # Case B: when literal is an Atom
     else:
@@ -74,12 +85,17 @@ def remove_literal(literal, tree, out_file):
             return tree
         # Case B: Base Case 2
         elif isinstance(tree, EGAtom):
+            print "GOT TO ATOM"
             if compare_EG_trees(tree, literal):
+                print "COMPARE TRUE"
                 return None
         # Case B: Base Case 3
         elif isinstance(tree, EGNegation):
+            print "SHOULD BE HERE"
+            print_eg_tree(tree)
             only_child = remove_literal(literal, tree.child, out_file)
             if only_child == None:
+                print "RETURNING EMPTY CUT"
                 return EGEmptyCut()
             else:
                 return EGNegation(only_child)
@@ -89,9 +105,16 @@ def remove_literal(literal, tree, out_file):
             # for each child, apply remove_literal recursively
             for i in range(0, tree.num_children):
                 new_child = remove_literal(literal, tree.children[i], out_file)
+                print "THIS IS THE NEW CHILD"
+                print_eg_tree(new_child)
                 if new_child != None:
                     new_children.append(new_child)
-            return EGAnd(len(new_children), new_children)
+            print "THIS IS THE NEW CHILDREN"
+            print new_children
+            temp = EGAnd(len(new_children), new_children)
+            print_eg_tree(temp)
+            # return EGAnd(len(new_children), new_children)
+            return temp
         # Case B: Everything else Case
         else:
             # if not catched above, the tree must be an Or, Implication or Biconditional
@@ -114,14 +137,15 @@ def remove_literal(literal, tree, out_file):
 # Helper function - removes any double cuts found in the tree
 # Should return a sub-tree containing with no double cuts
 def remove_dc_from_tree(tree, out_file):
-    print "In remove double cuts from tree.  Here is tree:"
-    print tree
-    print_eg_tree(tree)
+    # print "In remove double cuts from tree.  Here is tree:"
+    # print tree
+    # print_eg_tree(tree)
     # Base Case - if an atom or empty cut, just return it
     if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut) or tree == None:
         return tree
     # Base Case 2 - if a negation statement, then check to see if any double cuts can be removed
     elif isinstance(tree, EGNegation):
+        # CHECK IF WE ARE REMOVING DOUBLE CUTS PROPERLY
         tree = node_of_cut_to_rm(tree, 0)
         # print "In Negation check... Here is the tree after remove dc function:"
         # print_eg_tree(tree)
@@ -166,6 +190,8 @@ def remove_empty_cuts(tree, out_file):
             tree.replace_child(None)
         elif isinstance(tree, EGEmptyCut):
             return None
+        else:
+            tree.replace_child(result)
     elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
         found_empty = False
         i = 0
@@ -218,7 +244,6 @@ def cleanup(tree, out_file):
     # First clean up double cuts from the entire tree
     print "Removing double cuts from tree..."
     update_tree = remove_dc_from_tree(tree, out_file)
-
     print "Tree without double cuts:"
     print_eg_tree(update_tree)
 
@@ -290,6 +315,7 @@ def eg_cons(eg_tree, out_file):
     # Case if left with a negation of an and with a literal and a blob of stuff
     # Remove the literal from the blob and call eg_cons on it after clean up
     # If not in this structure, then assumed that something went wrong, and program terminates
+    # DEBUG THIS CASE - ONLY CONSIDER ATOMS NOT NEGATION OF ATOMS
     elif isinstance(eg_tree, EGNegation) and isinstance(eg_tree.child, EGAnd):
         print "EG_CONS: In case 3.  This is the tree: "
         print_eg_tree(eg_tree)
@@ -300,7 +326,14 @@ def eg_cons(eg_tree, out_file):
                     (isinstance(old_child.child.children[0], EGNegation) and \
                     isinstance(old_child.child.children[0].child, EGAtom)):
                     # The atom is on the first child, so remove from the entire tree
+                    print "Removing literal from the blob:"
+                    print_eg_tree(old_child.child.children[0])
                     temp = remove_literal(old_child.child.children[0], old_child.child.children[1], out_file)
+                    print "No more literals:"
+                    print_eg_tree(temp)
+                    temp = EGNegation(temp)
+                    print "Re-negated no more literals tree"
+                    print_eg_tree(temp)
                     temp = cleanup(temp, out_file)
                     eg_tree.child.replace_child(temp, 1)
                     return eg_cons(eg_tree.child.children[1], out_file)
@@ -324,144 +357,225 @@ def eg_cons(eg_tree, out_file):
     # Case if there are 2 or more premises remaining, then setup all of the premises,
     # run the clean up function on it, then call eg_cons on each of the remaining premises
     # Should assume that theres always some kind of AND at the base of every SA
-    # Structure: SA
-    #            |
-    #           SA
-    #          /  \
-    #        NEG  BLOB
-    #         |     |
-    #        SA    {}
     elif (isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and isinstance(eg_tree.children[0], EGAnd)) \
-        or (isinstance(eg_tree, EGAnd) and eg_tree.num_children == 2):
+        or (isinstance(eg_tree, EGAnd) and eg_tree.num_children >= 2):
         print "EG_CONS: In case 4.  Current tree:"
         print_eg_tree(eg_tree)
         if isinstance(eg_tree, SheetAssignment):
             new_root = eg_tree.children[0] # Should be EGAnd
         elif isinstance(eg_tree, EGAnd):
             # print "HERE"
-            new_root = eg_tree
+            new_root = eg_tree # Top of the tree passed in
         else:
             print_eg_tree(eg_tree)
             sys.exit("Something went wrong in case 4 of eg_cons...")
 
-        # Check if the premises are on the left side
-        premise_index = 0
-        premise_index = 1
-        if isinstance(new_root.children[0], EGNegation) and (isinstance(new_root.children[0].child, EGAnd) \
-            or isinstance(new_root.children[0].child, EGAtom)):
-            premise_index = 0
-            blob_index = 1
-        elif isinstance(new_root.children[1], EGNegation) and (isinstance(new_root.children[1].child, EGAnd) \
-            or isinstance(new_root.children[1].child, EGAtom)):
-            premise_index = 1
-            blob_index = 0
-        else:
-            print_eg_tree(eg_tree)
-            sys.exit("Incorrectly formatted tree for the 4th case in eg_cons!")
+        # Skip all the ANDs to the last ones
+        previous = None
+        temporary = new_root
+        while isinstance(temporary, EGAnd) and temporary.num_children == 1:
+            previous = temporary
+            temporary = temporary.children[0]
+        if previous != None:
+            temporary = previous
 
-        print "Premises:"
-        premises = new_root.children[premise_index] # Set it equal to the negation of the AND
-        print_eg_tree(premises)
-        # print premises
-        print "Blob:"
-        blob = new_root.children[blob_index]
-        print_eg_tree(blob)
-        # Double cut all premises and iterate the blob into the outer level of each double cut
-        i = 0
-        if isinstance(premises, EGNegation) and isinstance(premises.child, EGAtom):
-            temp = premises
-            dc_child = node_of_cut_to_add(temp)
-            print "Added double cut:"
-            print_eg_tree(dc_child)
-            temp2 = iterate(dc_child, blob)
-            print "Finished child:"
-            print_eg_tree(temp2)
-            temp = temp2
-            print "Added DC and blob:"
-            print_eg_tree(temp)
-            # Link back up to the original tree
-            premises.replace_child(temp)
-
-        while i < premises.child.num_children and not isinstance(premises, EGNegation):
-            # print "Child:"
-            # print premises.child.children[i]
-            if i < 0:
-                i = 0
-            # Not sure why there's just a None child in the list of premises - need to check if that's right
-            if premises.child.children[i] != None:
-                # For the inner and representing the original premises
-                # Remember to double cut the goal which is outside of this and bc it's treated as another premise
-                # At the moment the blob and the negated goal are identical but still need to iterate
-                temp = premises.child.children[i]
-                # print "This is temp"
-                # print temp
-                # print_eg_tree(temp)
-                prev = None
-                # Skip through all the top level and statements to get to the actual premises of the proof
-                while isinstance(temp, EGAnd) and temp.num_children == 1:
-                    # print "HERE"
-                    prev = temp
-                    temp = temp.children[0]
-                # If there is only one premise, then double cut on just that node
-                if not isinstance(temp, EGAnd) and prev != None:
-                    temp = prev
-
-                print prev
-                # No outer AND or only one level of AND
-                if prev == None and not isinstance(temp, EGAnd):
-                    dc_child = node_of_cut_to_add(temp)
-                    print "Added double cut:"
-                    print_eg_tree(dc_child)
-                    temp2 = iterate(dc_child, blob)
-                    print "Finished child:"
-                    print_eg_tree(temp2)
-                    temp = temp2
+        # Find the sub tree to reduce on and the "blob"
+        list_of_blob = []
+        to_reduce = None
+        found_to_reduce = False
+        for i in range(0, temporary.num_children):
+            # If you see another AND statement, search through for thing to reduce on
+            if isinstance(temporary.children[i], EGAnd):
+                for j in range(0, temporary.children[i].num_children):
+                    if temporary.children[i].children[j] == None:
+                        pass
+                    if temporary.children[i].children[j].value == "()" and found_to_reduce == False:
+                        to_reduce = temporary.children[i].children[j]
+                        found_to_reduce = True
+                    else:
+                        list_of_blob.append(temporary.children[i].children[j])
+            elif isinstance(temporary.children[i], EGBicon):
+                if found_to_reduce == False:
+                    # The left side of a biconditional should always be an implication
+                    to_reduce = temporary.children[i].left
+                    list_of_blob.append(temporary.children[i].right)
                 else:
-                    # Base layer AND statement found, now double cut all premises
-                    for j in range(0, temp.num_children):
-                        # Double cut all the original premises
-                        dc_child = node_of_cut_to_add(temp.children[j])
-                        print "Added double cut:"
-                        print_eg_tree(dc_child)
-                        # Insert the blob to the outer layer of each double cut
-                        temp2 = iterate(dc_child, blob)
-                        print "Finished child:"
-                        print_eg_tree(temp2)
-                        temp.replace_child(temp2, j)
-                print "Added DC and blob:"
-                print_eg_tree(temp)
-                # Link back up to the original tree
-                premises.child.replace_child(temp, i)
-                i += 1
+                    list_of_blob.append(temporary.children[i].left)
+                    list_of_blob.append(temporary.children[i].right)
+            elif isinstance(temporary.children[i], EGAtom):
+                list_of_blob.append(temporary.children[i])
+            elif temporary.children[i] == None:
+                pass
             else:
-                premises.child.remove_child(i)
-                i -= 1
-        print "Completed updating all premises:"
-        print_eg_tree(premises.child)
+                if found_to_reduce == False:
+                    to_reduce = temporary.children[i]
+                else:
+                    list_of_blob.append(temporary.children[i])
 
-        # Erase the outer blob
-        new_root.remove_child(blob_index)
-        print "Removed the outer blob: "
-        print_eg_tree(new_root)
+        # And everything else together to make a blob
+        blob = EGAnd(len(list_of_blob), list_of_blob)
 
-        if premise_index == 1:
-            premise_index = 0
+        assert(blob.num_children > 0)
+        assert(to_reduce != None)
 
-        # Replace the old children with updated ones (have the dc and blob)
-        new_root.replace_child(premises, premise_index)
-        print "Replaced old children: "
-        print_eg_tree(new_root)
+        # Double cut each child of the thing to reduce on and iterate the blob into each child
+        # If it's a negation of an ANDs
+        if isinstance(to_reduce.child, EGAnd):
+            for i in range(0, to_reduce.child.num_children):
+                # First double cut each child - dc_child will point to the outer layer of the double cut
+                dc_child = node_of_cut_to_add(to_reduce.child.children[i])
+                # Second iterate the blob into the outer child
+                dc_child = iterate(dc_child, blob)
+                dc_child = cleanup(dc_child, out_file)
+                return eg_cons(dc_child, out_file)
+        elif isinstance(to_reduce.child, EGAtom) or isinstance(to_reduce.child, EGEmptyCut):
+            dc_child = node_of_cut_to_add(to_reduce.child)
+            dc_child = iterate(dc_child, blob)
+            dc_child = cleanup(dc_child, out_file)
+            return eg_cons(dc_child, out_file)
+        else:
+            dc_child_left = node_of_cut_to_add(to_reduce.child.left)
+            dc_child_left = iterate(dc_child_left, blob)
+            dc_child_left = cleanup(dc_child_left, out_file)
 
-        # Clean up each child and run eg_cons on each premise
-        for i in range(0, premises.child.num_children):
-            if isinstance(premises.child.children[i], EGAnd):
-                # Make sure to loop through individual premises and call recursively
-                for j in range(0, premises.child.children[i].num_children):
-                    temp_child = cleanup(premises.child.children[i].children[j], out_file)
-                    return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
-            else:
-                temp_child = cleanup(premises.child.children[i], out_file)
-                return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
+            # Can stop early if an empty cut is found
+            if isinstance(eg_cons(dc_child_left, out_file), EGEmptyCut):
+                return EGEmptyCut()
+
+            dc_child_right = node_of_cut_to_add(to_reduce.child.right)
+            dc_child_right = iterate(dc_child_right, blob)
+            dc_child_right = cleanup(dc_child_right, out_file)
+            return eg_cons(dc_child_right, out_file)
+
+        # # Check if the premises are on the left side
+        # premise_index = 0
+        # premise_index = 1
+        # if isinstance(new_root.children[0], EGNegation) and (isinstance(new_root.children[0].child, EGAnd) \
+        #     or isinstance(new_root.children[0].child, EGAtom)):
+        #     premise_index = 0
+        #     blob_index = 1
+        # elif isinstance(new_root.children[1], EGNegation) and (isinstance(new_root.children[1].child, EGAnd) \
+        #     or isinstance(new_root.children[1].child, EGAtom)):
+        #     premise_index = 1
+        #     blob_index = 0
+        # else:
+        #     print_eg_tree(eg_tree)
+        #     sys.exit("Incorrectly formatted tree for the 4th case in eg_cons!")
+        #
+        # print "Premises:"
+        # premises = new_root.children[premise_index] # Set it equal to the negation of the AND
+        # print_eg_tree(premises)
+        # # print premises
+        # print "Blob:"
+        # blob = new_root.children[blob_index]
+        # print_eg_tree(blob)
+        # # Double cut all premises and iterate the blob into the outer level of each double cut
+        # i = 0
+        # if isinstance(premises, EGNegation) and isinstance(premises.child, EGAtom):
+        #     temp = premises
+        #     dc_child = node_of_cut_to_add(temp)
+        #     print "Added double cut:"
+        #     print_eg_tree(dc_child)
+        #     temp2 = iterate(dc_child, blob)
+        #     print "Finished child:"
+        #     print_eg_tree(temp2)
+        #     temp = temp2
+        #     print "Added DC and blob:"
+        #     print_eg_tree(temp)
+        #     # Link back up to the original tree
+        #     premises.replace_child(temp)
+        #
+        # while i < premises.child.num_children and not isinstance(premises, EGNegation):
+        #     # print "Child:"
+        #     # print premises.child.children[i]
+        #     if i < 0:
+        #         i = 0
+        #     # Not sure why there's just a None child in the list of premises - need to check if that's right
+        #     if premises.child.children[i] != None:
+        #         # For the inner and representing the original premises
+        #         # Remember to double cut the goal which is outside of this and bc it's treated as another premise
+        #         # At the moment the blob and the negated goal are identical but still need to iterate
+        #         temp = premises.child.children[i]
+        #         # print "This is temp"
+        #         # print temp
+        #         # print_eg_tree(temp)
+        #         prev = None
+        #         # Skip through all the top level and statements to get to the actual premises of the proof
+        #         while isinstance(temp, EGAnd) and temp.num_children == 1:
+        #             # print "HERE"
+        #             prev = temp
+        #             temp = temp.children[0]
+        #         # If there is only one premise, then double cut on just that node
+        #         if not isinstance(temp, EGAnd) and prev != None:
+        #             temp = prev
+        #
+        #         print prev
+        #         # No outer AND or only one level of AND
+        #         if prev == None and not isinstance(temp, EGAnd):
+        #             dc_child = node_of_cut_to_add(temp)
+        #             print "Added double cut:"
+        #             print_eg_tree(dc_child)
+        #             temp2 = iterate(dc_child, blob)
+        #             print "Finished child:"
+        #             print_eg_tree(temp2)
+        #             temp = temp2
+        #         else:
+        #             # Base layer AND statement found, now double cut all premises
+        #             for j in range(0, temp.num_children):
+        #                 # Double cut all the original premises
+        #                 dc_child = node_of_cut_to_add(temp.children[j])
+        #                 print "Added double cut:"
+        #                 print_eg_tree(dc_child)
+        #                 # Insert the blob to the outer layer of each double cut
+        #                 temp2 = iterate(dc_child, blob)
+        #                 print "Finished child:"
+        #                 print_eg_tree(temp2)
+        #                 temp.replace_child(temp2, j)
+        #         print "Added DC and blob:"
+        #         print_eg_tree(temp)
+        #         # Link back up to the original tree
+        #         premises.child.replace_child(temp, i)
+        #         i += 1
+        #     else:
+        #         premises.child.remove_child(i)
+        #         i -= 1
+        # print "Completed updating all premises:"
+        # print_eg_tree(premises.child)
+        #
+        # # Erase the outer blob
+        # new_root.remove_child(blob_index)
+        # print "Removed the outer blob: "
+        # print_eg_tree(new_root)
+        #
+        # if premise_index == 1:
+        #     premise_index = 0
+        #
+        # # Replace the old children with updated ones (have the dc and blob)
+        # new_root.replace_child(premises, premise_index)
+        # print "Replaced old children: "
+        # print_eg_tree(new_root)
+        #
+        # print "Here is what we're running eg_cons on now:"
+        # print_eg_tree(premises.child)
+        #
+        # print "Here is the number of children:"
+        # print premises.child.num_children
+        #
+        # # Clean up each child and run eg_cons on each premise
+        # for i in range(0, premises.child.num_children):
+        #     print "This is the current child:"
+        #     print premises.child.children[i]
+        #     print_eg_tree(premises.child.children[i])
+        #     if premises.child.children[i] == None:
+        #         continue
+        #     elif isinstance(premises.child.children[i], EGAnd):
+        #         # Make sure to loop through individual premises and call recursively
+        #         for j in range(0, premises.child.children[i].num_children):
+        #             temp_child = cleanup(premises.child.children[i].children[j], out_file)
+        #             return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
+        #     else:
+        #         temp_child = cleanup(premises.child.children[i], out_file)
+        #         return eg_cons(temp_child, out_file) # Hopefully will terminate -> should just return an empty cut
     else:
         print_eg_tree(eg_tree)
         sys.exit("Incorrectly formatted tree for eg_cons!")
@@ -488,13 +602,14 @@ def find_proof(premises, goal):
     print_eg_tree(setup_tree)
 
     lst = []
-    lst.append(setup_tree.children[1].child)
+    lst.append(setup_tree.children[1].child.children[0].child)
     inner_SA = SheetAssignment(1, lst)
 
     print "This is inner SA:"
     print_eg_tree(inner_SA)
 
     # Run consistency algorithm to determine proof
+    inner_SA = cleanup(inner_SA, out_file)
     final_tree = eg_cons(inner_SA, out_file)
 
     print "Completed proof... Here is final tree:"
