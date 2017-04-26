@@ -620,4 +620,4 @@ def find_proof(premises, goal):
     print final_tree
     print_eg_tree(final_tree)
 
-    
+
