@@ -18,7 +18,7 @@ def node_of_cut_to_add(node_to_dc):
 # Will remove a single double cut specified by the index
 # Returns the modified parent that no longer contains the double cut
 def node_of_cut_to_rm(parent, index_to_rm_double_cut):
-    print "In Node of cut to remove... Here is the tree:"
+    # print "In Node of cut to remove... Here is the tree:"
     # print parent
     # print_eg_tree(parent)
     # Should not ever pass in an atom or empty cut statement as they will never
@@ -62,8 +62,6 @@ def node_of_cut_to_rm(parent, index_to_rm_double_cut):
             elif child.value == "()":
                 # print "HERE"
                 parent = EGAnd(2, [child.left, child.right])
-            else:
-                print "Nothing to do..."
         else:
             # left_child = parent.left
             # right_child = parent.right
