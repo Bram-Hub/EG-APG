@@ -136,7 +136,8 @@ class EGAnd(EGStatement):
     def to_string_tree(self):
         my_str = ""
         for i in range (0, self.num_children):
-            my_str += self.children[i].to_string_tree()
+            if self.children[i] != None:
+                my_str += self.children[i].to_string_tree()
         return my_str
 
 # A or statement is represented by a cut as the value and 2 children

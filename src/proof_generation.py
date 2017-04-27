@@ -140,14 +140,17 @@ def remove_literal(literal, tree, out_file):
 
 # Helper function - removes any double cuts found in the tree
 # Should return a sub-tree containing with no double cuts
+# Printing in Pegasus output can also just print a line with no actual changes if no double cuts are present
 def remove_dc_from_tree(tree, out_file):
+    before_tree = None
+    after_tree = None
     # Base Case - if an atom or empty cut, just return it
     if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut) or tree == None:
         return tree
     # Base Case 2 - if a negation statement, then check to see if any double cuts can be removed
     elif isinstance(tree, EGNegation):
+        before_tree = copy_tree(tree)
         tree = node_of_cut_to_rm(tree, 0)
-        # return tree
         # If it stayed as a negation then just check its child for dc
         if isinstance(tree, EGNegation):
             tree.replace_child(remove_dc_from_tree(tree.child, out_file))
@@ -155,25 +158,37 @@ def remove_dc_from_tree(tree, out_file):
                 tree = tree.child.children[0].child
             elif isinstance(tree.child, EGNegation):
                 tree = tree.child.child
+            # Want to avoid small sub trees of the entire tree when printing in Pegasus format, so print after all recursive calls
+            # Draw back is that there can be multiple double cuts removed that will be reflected in a single line
+            after_tree = copy_tree(tree)
+            write_to_file(out_file, "DC", before_tree, after_tree)
         # If it was altered and no longer a negation, then check if the new structure contains any double cuts
         else:
             tree = remove_dc_from_tree(tree, out_file)
-            # return tree
+            after_tree = copy_tree(tree)
+            write_to_file(out_file, "DC", before_tree, after_tree)
     elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
         i = 0
+        before_tree = copy_tree(tree)
         while i < tree.num_children:
             # Update the parent, which is an SA or AND statement, with all the children with no double cuts
             to_replace = remove_dc_from_tree(tree.children[i], out_file)
             if to_replace == None:
                 tree.remove_child(i)
+                after_tree = copy_tree(tree)
+                write_to_file(out_file, "DC", before_tree, after_tree)
                 i -= 1
             else:
                 tree.replace_child(to_replace, i)
+                after_tree = copy_tree(tree)
+                write_to_file(out_file, "DC", before_tree, after_tree)
                 i += 1
         if isinstance(tree, EGAnd):
             if tree.num_children == 1:
                 tree = tree.children[0]
     else:
+        before_tree = copy_tree(tree)
+
         left_child = remove_dc_from_tree(tree.left, out_file)
         right_child = remove_dc_from_tree(tree.right, out_file)
 
@@ -181,6 +196,9 @@ def remove_dc_from_tree(tree, out_file):
         old_children = [left_child, right_child]
         new_child = EGAnd(2, old_children)
         tree = EGNegation(new_child)
+        after_tree = copy_tree(tree)
+        # For current implement, a single line will show multiple changes happening at once
+        write_to_file(out_file, "DC", before_tree, after_tree)
     # print "Here is the result: "
     # print tree
     return tree
@@ -188,7 +206,11 @@ def remove_dc_from_tree(tree, out_file):
 # Helper function - check if there are any empty cuts in a subtree and remove that subtree
 # Idea is that only the immediate parent of the empty cut gets removed (entire structure)
 # but that's it
+# Is the action considered a removal of a double cut or just an erase
 def remove_empty_cuts(tree, out_file):
+    before_tree = copy_tree(tree)
+    after_tree = None
+
     # Base case:  tree is the empty cut or an atom
     if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom) or tree == None:
         return tree
@@ -297,9 +319,17 @@ def setup(premises, goal, out_file):
     if isinstance(premises.children[1], EGNegation):
         if isinstance(premises.children[1].child, EGAnd):
             p = premises.children[0]
+            before_tree = copy_tree(premises)
             temp = iterate(premises.children[premises.num_children-1].child.children[0], p)
+            premises.children[premises.num_children-1].child.replace_child(temp, 0)
+            after_tree = copy_tree(premises)
+            write_to_file(out_file, "IT", before_tree, after_tree)
+
+            before_tree = copy_tree(premises)
             temp = iterate(premises.children[premises.num_children-1].child.children[0], negate_goal)
             premises.children[premises.num_children-1].child.replace_child(temp, 0)
+            after_tree = copy_tree(premises)
+            write_to_file(out_file, "IT", before_tree, after_tree)
             print "Inserted the negation of goal and premises:"
             print_eg_tree(premises)
     else:
@@ -469,6 +499,8 @@ def eg_cons(eg_tree, out_file):
 def find_proof(premises, goal):
     print
 
+    before_tree = None
+    after_tree = None
     # Create the output file -> should make it an option that the user puts in
     # the name of the file at the beginning
     out_file = open('output.pega', 'w')
@@ -484,6 +516,7 @@ def find_proof(premises, goal):
     print "This is the setup tree: "
     print_eg_tree(setup_tree)
 
+    # Currently will jump to the sub tree in Pegasus output
     lst = []
     lst.append(setup_tree.children[1].child.children[0].child)
     inner_SA = SheetAssignment(1, lst)
@@ -499,16 +532,21 @@ def find_proof(premises, goal):
     print_eg_tree(cons_tree)
 
     print "Inserting results:"
+    before_tree = copy_tree(setup_tree)
     setup_tree.children[1].child.children[0].replace_child(cons_tree)
     print_eg_tree(setup_tree)
+    after_tree = copy_tree(setup_tree)
+    write_to_file(out_file, "IT", before_tree, after_tree)
 
     print "Removing original premises:"
+    before_tree = copy_tree(setup_tree)
     setup_tree.remove_child(0)
     print_eg_tree(setup_tree)
+    after_tree = copy_tree(setup_tree)
+    write_to_file(out_file, "ER", before_tree, after_tree)
 
     print "Remove double cuts on tree:"
     final_tree = remove_dc_from_tree(setup_tree, out_file)
     print_eg_tree(final_tree)
 
     print "Completed proof searching... Exiting..."
-
