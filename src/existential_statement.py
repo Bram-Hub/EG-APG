@@ -102,7 +102,8 @@ class EGNegation(EGStatement):
     def to_string_tree(self):
         my_str = ""
         my_str += "("
-        my_str += self.child.to_string_tree()
+        if self.child != None:
+            my_str += self.child.to_string_tree()
         my_str += ")"
         return my_str
 
@@ -295,6 +296,43 @@ def transform(tree, stack):
         assert False
     return stack
 
+def copy_tree(tree):
+    # Base case
+    if isinstance(tree, EGAtom):
+        return EGAtom(tree.value)
+    elif isinstance(tree, EGEmptyCut):
+        return EGEmptyCut()
+    elif isinstance(tree, EGNegation):
+        # Copy the child and then make a new node with it
+        new_child = copy_tree(tree.child)
+        return EGNegation(new_child)
+    elif isinstance(tree, EGOr):
+        new_left_child = copy_tree(tree.left)
+        new_right_child = copy_tree(tree.right)
+        return EGOr(new_left_child, new_right_child)
+    elif isinstance(tree, EGImp):
+        new_left_child = copy_tree(tree.left)
+        new_right_child = copy_tree(tree.right)
+        return EGImp(new_left_child, new_right_child)
+    elif isinstance(tree, EGBicon):
+        new_left_child = copy_tree(tree.left)
+        new_right_child = copy_tree(tree.right)
+        return EGBicon(new_left_child, new_right_child)
+    elif isinstance(tree, EGAnd):
+        new_tree = EGAnd(0, [])
+        for i in range(0, tree.num_children):
+            new_tree.add_children(copy_tree(tree.children[i]))
+        return new_tree
+    elif isinstance(tree, SheetAssignment):
+        new_tree = SheetAssignment(0, [])
+        for i in range(0, tree.num_children):
+            new_tree.add_children(copy_tree(tree.children[i]))
+        return new_tree
+    elif tree == None:
+        return None
+    else:
+        sys.exit("Something went wrong when copying the tree! Exiting...")
+
 def print_eg_tree(tree, level=0):
     if isinstance(tree, SheetAssignment):
         # print "level", level, ":", tree.value
@@ -332,6 +370,10 @@ def print_tree_pegasus_style(tree):
     tree.printTree()
     #print tree.to_string_tree()
 
+def to_string_tree(tree):
+    if tree != None:
+        return tree.to_string_tree()
+
 # given n,
 # returns all permutations
 
@@ -347,12 +389,12 @@ def permutate(n):
         return p
     else:
         temp = permutate(n-1)
-        # print "temp: ", temp
+        print "temp: ", temp
         end = len(temp)
         build = []
         for j in range (end):
             for i in range (n-1):
-                # print "j: ", j, " i:",i
+                print "j: ", j, " i:",i
                 build.extend(temp[j][0:i])
                 build.append(n)
                 build.extend(temp[j][i:end])
@@ -402,7 +444,7 @@ def children_of(str_t):
                 ne_op_in = str_t.find('(', s)
                 ne_cl_in = str_t.find(')', s)
                 while open_paren_count > 0:
-                    # print "open_paren_count: ", open_paren_count
+                    print "open_paren_count: ", open_paren_count
                     # found another open
                     if (ne_cl_in > ne_op_in):
                         open_paren_count += 1
@@ -432,7 +474,7 @@ def string_permutations_of_EG_tree(t):
     print "childresn!!!: ", ch_list
 
     permutation_indicies = permutate(len(ch_list))
-    # print "permutation_indicies: ", permutation_indicies
+    print "permutation_indicies: ", permutation_indicies
 
     for perm in permutation_indicies:
         build = ""
@@ -449,14 +491,12 @@ def string_permutations_of_EG_tree(t):
 # returns true if EG equivelent
 # otherwise false
 def compare_EG_trees(eg_tree_1, eg_tree_2):
-    if eg_tree_1.to_string_tree() == eg_tree_2.to_string_tree():
-        return True
+    test = permutate(3)
+    print "test 3: ", test
+    permutations = string_permutations_of_EG_tree(eg_tree_2)
+    print "permutations"
+    for p in permutations:
+        print p
+        if eg_tree_1.to_string_tree() == p:
+            return True
     return False
-    
-    # permutations = string_permutations_of_EG_tree(eg_tree_2)
-    # print "permutations"
-    # for p in permutations:
-    #     print p
-    #     if eg_tree_1.to_string_tree() == p:
-    #         return True
-    # return False

@@ -189,10 +189,6 @@ def remove_dc_from_tree(tree, out_file):
 # Idea is that only the immediate parent of the empty cut gets removed (entire structure)
 # but that's it
 def remove_empty_cuts(tree, out_file):
-    # print "In remove empty cuts:"
-    # print tree
-    # print_eg_tree(tree)
-
     # Base case:  tree is the empty cut or an atom
     if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom) or tree == None:
         return tree
@@ -250,27 +246,27 @@ def remove_empty_cuts(tree, out_file):
 
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
-    print "In clean up. Here is the tree:"
-    print_eg_tree(tree)
-
     # First clean up double cuts from the entire tree
-    print "Removing double cuts from tree..."
     update_tree = remove_dc_from_tree(tree, out_file)
-    print "Tree without double cuts:"
-    print_eg_tree(update_tree)
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
-    print "Removing empty cuts from tree..."
     update_tree = remove_empty_cuts(update_tree, out_file)
-    print "Tree without empty cuts:"
-    print_eg_tree(update_tree)
 
     return update_tree
+
+def write_to_file(out_file, rule, before, after):
+    before_str = to_string_tree(before)
+    after_str = to_string_tree(after)
+    out_file.write("%s:%s => %s\n" % (rule, before_str, after_str))
 
 # Converts the premises tree into the format needed for conducting the proof
 # Also includes the setup files in the output file
 def setup(premises, goal, out_file):
+    # Variables below how the before and after states of the tree to print in Pegasus format
+    before_tree = copy_tree(premises)
+    after_tree = before_tree
+
     # First add an empty double cut onto the sheet of assignment
     empty_dc = node_of_cut_to_add(None)
     try:
@@ -281,16 +277,21 @@ def setup(premises, goal, out_file):
 
     print "Added empty double cut: "
     print_eg_tree(premises)
+    after_tree = copy_tree(premises)
+    write_to_file(out_file, "DC", before_tree, after_tree)
 
     # Insert the negation of the goal into the outer level of the double cut
     negate_goal = EGNegation(goal.children[0])
     print "This is the negated goal:"
     print_eg_tree(negate_goal)
+    before_tree = copy_tree(premises)
     # Based on what was done above, the empty dc should be the last child on the sheet of assignment
     temp = iterate(premises.children[premises.num_children-1], negate_goal)
     premises.replace_child(temp, premises.num_children-1)
+    after_tree = premises
     print "Inserted the negation of goal:"
     print_eg_tree(premises)
+    write_to_file(out_file, "IT", before_tree, after_tree)
 
     # Iterate the premises and complement of the goal into the inner level of the double cut
     if isinstance(premises.children[1], EGNegation):
