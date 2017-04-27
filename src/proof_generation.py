@@ -511,3 +511,4 @@ def find_proof(premises, goal):
     print_eg_tree(final_tree)
 
     print "Completed proof searching... Exiting..."
+
