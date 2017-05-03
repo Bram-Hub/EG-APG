@@ -121,10 +121,15 @@ def remove_literal(literal, tree, out_file):
             return temp
         # Case B: Everything else Case
         else:
-            # if not catched above, the tree must be an Or, Implication or Biconditional
-            assert( isinstance(tree, EGOr) or \
-                isinstance(tree, EGImplication) or \
-                isinstance(tree, EGBiconditional))
+            if not (isinstance(tree, EGOr) or \
+                isinstance(tree, EGImp) or \
+                isinstance(tree, EGBicon)):
+                print type(tree)
+            else:
+                # if not catched above, the tree must be an Or, Implication or Biconditional
+                assert( isinstance(tree, EGOr) or \
+                    isinstance(tree, EGImp) or \
+                    isinstance(tree, EGBicon))
             # grab the left and right child after remove literal on them
             left_child = remove_literal(tree.left, out_file)
             right_child = remove_literal(tree.right, out_file)
@@ -360,11 +365,11 @@ def eg_cons(eg_tree, out_file):
     # If not in this structure, then assumed that something went wrong, and program terminates
     # DEBUG THIS CASE - ONLY CONSIDER ATOMS NOT NEGATION OF ATOMS
     elif isinstance(eg_tree, EGNegation) and isinstance(eg_tree.child, EGAnd):
-        # print "EG_CONS: In case 3.  This is the tree: "
-        # print_eg_tree(eg_tree)
+        print "EG_CONS: In case 3.  This is the tree: "
+        print_eg_tree(eg_tree)
         old_child = eg_tree
         if isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd):
-            if old_child.child.num_children == 2:
+            if old_child.child.num_children >= 2:
                 if isinstance(old_child.child.children[0], EGAtom) or \
                     (isinstance(old_child.child.children[0], EGNegation) and \
                     isinstance(old_child.child.children[0].child, EGAtom)):
