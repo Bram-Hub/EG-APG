@@ -41,6 +41,7 @@ def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
         # print "THIS IS THE NEW CHILDREN"
         # print new_children
         temp = EGAnd(len(new_children), new_children)
+        print "this is what removing the inside of the neg literal replaced with emty cut looks like:"
         print_eg_tree(temp)
         # return EGAnd(len(new_children), new_children)
         return temp
@@ -78,6 +79,7 @@ def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
 
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
+    print "heres the literal"
     print_eg_tree(literal)
     assert( isinstance(literal, EGAtom) or (isinstance(literal, EGNegation) and isinstance(literal.child, EGAtom) ) )
 # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ###
@@ -476,102 +478,116 @@ def eg_cons(eg_tree, out_file):
         print_eg_tree(eg_tree)
         old_child = eg_tree
         if isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd):
-            if old_child.child.num_children >= 2:
-                no_literal_found = False
-                literal = None
-                list_of_blob = []
-                for i,potential_literal in enumerate(old_child.child.children):
-                    if potential_literal == None:
-                        pass
-                    # If you see another AND statement, search through for thing to reduce on
-                    if isinstance(potential_literal, EGAnd):
-                        for j in range(0, potential_literal.num_children):
-                            if potential_literal.children[j] == None:
-                                pass
-                            if isinstance(potential_literal, EGAtom):
-                                literal = potential_literal.children[j]
-                                no_literal_found = True
-                            else:
-                                list_of_blob.append(potential_literal.children[j])
-                    elif isinstance(potential_literal, EGBicon) or isinstance(potential_literal, EGImp) or isinstance(potential_literal, EGOr):
-                        if no_literal_found == False:
-                            if isinstance(potential_literal.left, EGAtom):
+            if do_case_3:
+                # Skip all the ANDs to the last ones
+                previous = None
+                better_root = tree
+                while isinstance(better_root, EGAnd) and better_root.num_children == 1:
+                    previous = better_root
+                    better_root = better_root.children[0]
+                if previous != None:
+                    better_root = previous
 
-                                # The left side of a biconditional should always be an implication
-                                literal = potential_literal.left
-                                no_literal_found = True
-                                list_of_blob.append(potential_literal.right)
-                            else:
-                                assert (isinstance(potential_literal.right, EGAtom))
+                things_to_work_with = better_root
 
-                                # The right side of a biconditional should always be an implication
-                                literal = potential_literal.right
-                                no_literal_found = True
-                                list_of_blob.append(potential_literal.left)
+            elif old_child.child.num_children >= 2:
+                things_to_work_with = old_child.child
+            else:
+                print_eg_tree(eg_tree)
+                sys.exit("Not enough children for this case for eg_cons!")
 
+            no_literal_found = False
+            literal = None
+            list_of_blob = []
+            for i,potential_literal in enumerate(things_to_work_with.children):
+                if potential_literal == None:
+                    pass
+                # If you see another AND statement, search through for thing to reduce on
+                if isinstance(potential_literal, EGAnd):
+                    for j in range(0, potential_literal.num_children):
+                        if potential_literal.children[j] == None:
+                            pass
+                        if isinstance(potential_literal, EGAtom):
+                            literal = potential_literal.children[j]
+                            no_literal_found = True
                         else:
-                            list_of_blob.append(potential_literal.left)
+                            list_of_blob.append(potential_literal.children[j])
+                elif isinstance(potential_literal, EGBicon) or isinstance(potential_literal, EGImp) or isinstance(potential_literal, EGOr):
+                    if no_literal_found == False:
+                        if isinstance(potential_literal.left, EGAtom):
+
+                            # The left side of a biconditional should always be an implication
+                            literal = potential_literal.left
+                            no_literal_found = True
                             list_of_blob.append(potential_literal.right)
-                    elif isinstance(potential_literal, EGAtom):
+                        else:
+                            assert (isinstance(potential_literal.right, EGAtom))
+
+                            # The right side of a biconditional should always be an implication
+                            literal = potential_literal.right
+                            no_literal_found = True
+                            list_of_blob.append(potential_literal.left)
+
+                    else:
+                        list_of_blob.append(potential_literal.left)
+                        list_of_blob.append(potential_literal.right)
+                elif isinstance(potential_literal, EGAtom):
+                    if no_literal_found == False:
+                        literal = potential_literal
+                        # no_literal_found = True
+                    else:
+                        list_of_blob.append(potential_literal)
+                elif potential_literal == None:
+                    pass
+                elif isinstance(potential_literal, EGNegation):
+                    if isinstance(potential_literal.child, EGAtom) or \
+                            (isinstance(potential_literal.child, EGNegation) and \
+                            isinstance(potential_literal.child.child, EGAtom)):
                         if no_literal_found == False:
                             literal = potential_literal
                             # no_literal_found = True
                         else:
                             list_of_blob.append(potential_literal)
-                    elif potential_literal == None:
-                        pass
-                    elif isinstance(potential_literal, EGNegation):
-                        if isinstance(potential_literal.child, EGAtom) or \
-                                (isinstance(potential_literal.child, EGNegation) and \
-                                isinstance(potential_literal.child.child, EGAtom)):
-                            if no_literal_found == False:
-                                literal = potential_literal
-                                # no_literal_found = True
-                            else:
-                                list_of_blob.append(potential_literal)
-                        else:
-                            list_of_blob.append(potential_literal)
                     else:
-                        print "should be asesrting 0 next: ", potential_literal
-                        assert(0)
-
-
-                if no_literal_found:
-                    print_eg_tree(eg_tree)
-                    sys.exit("Missing a literal for this case for eg_cons!")
-
-                # And everything else together to make a blob
-                blob = EGAnd(len(list_of_blob), list_of_blob)
-
-                # print "EG CONS CASE 3: THIS IS OLD BLOB"
-                # print_eg_tree(blob)
-
-                assert(blob.num_children > 0)
-                assert(literal != None)
-
-
-                # Located the literal and the blob
-
-                # print "Removing literal from the blob:"
-                # print_eg_tree(literal)
-                # ++ if (literal == None):
-
-                new_blob = remove_literal(literal, blob, out_file)
-                print "No more literals:"
-                print_eg_tree(new_blob)
-                new_blob = EGNegation(new_blob)
-                print "Re-negated no more literals tree"
-                print_eg_tree(new_blob)
-                new_blob = cleanup(new_blob, out_file)
-                # eg_tree.child.replace_child(new_blob, 1) // isgnored because not sure of strcture
-                # print "EG CONS CASE 3: THIS IS LITERAL"
-                # print_eg_tree(literal)
-                print "EG CONS CASE 3: THIS IS THE NEW BLOB"
-                print_eg_tree(new_blob)
-                return eg_cons(new_blob, out_file)
-            else:
+                        list_of_blob.append(potential_literal)
+                else:
+                    print "should be asesrting 0 next: ", potential_literal
+                    assert(0)
+                    
+            if no_literal_found:
                 print_eg_tree(eg_tree)
-                sys.exit("Not enough children for this case for eg_cons!")
+                sys.exit("Missing a literal for this case for eg_cons!")
+
+            # And everything else together to make a blob
+            blob = EGAnd(len(list_of_blob), list_of_blob)
+
+            print "EG CONS CASE 3: THIS IS OLD BLOB"
+            print_eg_tree(blob)
+
+            assert(blob.num_children > 0)
+            assert(literal != None)
+
+
+            # Located the literal and the blob
+
+            print "Removing literal from the blob:"
+            print_eg_tree(literal)
+            # ++ if (literal == None):
+
+            new_blob = remove_literal(literal, blob, out_file)
+            print "No more literals:"
+            print_eg_tree(new_blob)
+            new_blob = EGNegation(new_blob)
+            print "Re-negated no more literals tree"
+            print_eg_tree(new_blob)
+            new_blob = cleanup(new_blob, out_file)
+            # eg_tree.child.replace_child(new_blob, 1) // isgnored because not sure of strcture
+            # print "EG CONS CASE 3: THIS IS LITERAL"
+            # print_eg_tree(literal)
+            print "EG CONS CASE 3: THIS IS THE NEW BLOB"
+            print_eg_tree(new_blob)
+            return eg_cons(new_blob, out_file)
+            
         else:
                 print_eg_tree(eg_tree)
                 sys.exit("Incorrectly formatted tree for the 3rd case in eg_cons!")
