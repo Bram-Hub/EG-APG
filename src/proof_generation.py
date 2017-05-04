@@ -295,7 +295,7 @@ def remove_dc_from_tree(tree, out_file):
 # Idea is that only the immediate parent of the empty cut gets removed (entire structure)
 # but that's it
 # Is the action considered a removal of a double cut or just an erase
-def remove_empty_cuts(tree, out_file):
+def remove_empty_cuts(tree, level, out_file):
     before_tree = copy_tree(tree)
     after_tree = copy_tree(tree)
 
@@ -303,10 +303,10 @@ def remove_empty_cuts(tree, out_file):
     if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom) or tree == None:
         return tree
     elif isinstance(tree, EGNegation):
-        result = remove_empty_cuts(tree.child, out_file)
+        result = remove_empty_cuts(tree.child, level+1, out_file)
         if result == None:
             tree.replace_child(None)
-        elif isinstance(tree, EGEmptyCut):
+        elif isinstance(result, EGEmptyCut):
             return None
         else:
             tree.replace_child(result)
@@ -314,7 +314,8 @@ def remove_empty_cuts(tree, out_file):
         found_empty = False
         i = 0
         while i < tree.num_children:
-            result = remove_empty_cuts(tree.children[i], out_file)
+            result = remove_empty_cuts(tree.children[i], level+1, out_file)
+            # Got rid of an empty cut from a subtree
             if result == None:
                 tree.remove_child(i)
                 i -= 1
@@ -327,9 +328,13 @@ def remove_empty_cuts(tree, out_file):
                 i += 1
         if found_empty == True:
             return None
+        elif level == 0 and found_empty == True:
+            for i in range(0, tree.num_children):
+                if not isinstance(tree.children[i], EGEmptyCut):
+                    tree.remove_child(i)
     else:
-        left_child = remove_empty_cuts(tree.left, out_file)
-        right_child = remove_empty_cuts(tree.right, out_file)
+        left_child = remove_empty_cuts(tree.left, level+1, out_file)
+        right_child = remove_empty_cuts(tree.right, level+1, out_file)
 
         # This case shouldn't happen, but if it does, should propagate up the tree
         if left_child == None and right_child == None:
@@ -365,7 +370,7 @@ def cleanup(tree, out_file):
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
-    update_tree = remove_empty_cuts(update_tree, out_file)
+    update_tree = remove_empty_cuts(update_tree, 0, out_file)
     # print "CLEANUP: REMOVED EMPTY"
 
     return update_tree
@@ -475,7 +480,7 @@ def eg_cons(eg_tree, out_file):
         print "EG_CONS: In case 3.  This is the tree: "
         print_eg_tree(eg_tree)
         old_child = eg_tree
-        if isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd):
+        if (isinstance(old_child, EGNegation) and isinstance(old_child.child, EGAnd)) or do_case_3:
             if old_child.child.num_children >= 2:
                 no_literal_found = False
                 literal = None
