@@ -372,7 +372,7 @@ def cleanup(tree, out_file):
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
-    update_tree = remove_empty_cuts(update_tree, 0, out_file)
+    # update_tree = remove_empty_cuts(update_tree, 0, out_file)
     # print "CLEANUP: REMOVED EMPTY"
 
     return update_tree
@@ -554,6 +554,8 @@ def eg_cons(eg_tree, out_file):
                         list_of_blob.append(potential_literal)
                 else:
                     list_of_blob.append(potential_literal)
+            elif isinstance(potential_literal, EGEmptyCut):
+                list_of_blob.append(potential_literal)
             else:
                 print "should be asesrting 0 next: ", potential_literal
                 assert(0)
