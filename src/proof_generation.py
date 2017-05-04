@@ -300,7 +300,11 @@ def remove_dc_from_tree(tree, out_file):
 def remove_empty_cuts(tree, level, out_file):
     before_tree = copy_tree(tree)
     after_tree = copy_tree(tree)
-
+    print "THIS IS LEVEL"
+    print level
+    print "THIS IS TREE"
+    print_eg_tree(tree)
+    print tree
     # Base case:  tree is the empty cut or an atom
     if isinstance(tree, EGEmptyCut) or isinstance(tree, EGAtom) or tree == None:
         return tree
@@ -313,6 +317,7 @@ def remove_empty_cuts(tree, level, out_file):
         else:
             tree.replace_child(result)
     elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        print "HERE IN AND"
         found_empty = False
         i = 0
         while i < tree.num_children:
@@ -321,6 +326,7 @@ def remove_empty_cuts(tree, level, out_file):
             if result == None:
                 tree.remove_child(i)
                 i -= 1
+                found_empty = True
             # If one of the children is an empty cut, then just get rid of the parent
             elif isinstance(result, EGEmptyCut):
                 found_empty = True
@@ -328,12 +334,15 @@ def remove_empty_cuts(tree, level, out_file):
             else:
                 tree.replace_child(result, i)
                 i += 1
-        if found_empty == True:
-            return None
-        elif level == 0 and found_empty == True:
+        print "THIS IS FOUND EMPTY"
+        print found_empty
+        if level == 0 and found_empty == True:
+            print "HERE"
             for i in range(0, tree.num_children):
                 if not isinstance(tree.children[i], EGEmptyCut):
                     tree.remove_child(i)
+        elif found_empty == True:
+            return None
     else:
         left_child = remove_empty_cuts(tree.left, level+1, out_file)
         right_child = remove_empty_cuts(tree.right, level+1, out_file)
@@ -373,7 +382,8 @@ def cleanup(tree, out_file):
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
     update_tree = remove_empty_cuts(update_tree, 0, out_file)
-    # print "CLEANUP: REMOVED EMPTY"
+    print "CLEANUP: REMOVED EMPTY CUTS"
+    print_eg_tree(update_tree)
 
     return update_tree
 
@@ -586,7 +596,7 @@ def eg_cons(eg_tree, out_file):
         new_blob = EGNegation(new_blob)
         print "Re-negated no more literals tree"
         print_eg_tree(new_blob)
-        new_blob = cleanup(new_blob, out_file)
+        new_blob = cleanup(new_blob.child, out_file)
         # eg_tree.child.replace_child(new_blob, 1) // isgnored because not sure of strcture
         # print "EG CONS CASE 3: THIS IS LITERAL"
         # print_eg_tree(literal)
@@ -675,33 +685,36 @@ def eg_cons(eg_tree, out_file):
                 dc_child = node_of_cut_to_add(to_reduce.child.children[i])
                 # Second iterate the blob into the outer child
                 dc_child = iterate(dc_child, blob)
-                dc_child = cleanup(dc_child, out_file)
-                print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
+                print "EG CONS CASE 4: THIS IS THE TREE BEFORE CLEAN UP"
                 print_eg_tree(dc_child.child)
-                return eg_cons(dc_child.child, out_file)
+                dc_child = cleanup(dc_child.child, out_file)
+                print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
+                print_eg_tree(dc_child)
+                return eg_cons(dc_child, out_file)
         elif isinstance(to_reduce.child, EGAtom) or isinstance(to_reduce.child, EGEmptyCut):
             dc_child = node_of_cut_to_add(to_reduce.child)
             dc_child = iterate(dc_child, blob)
-            dc_child = cleanup(dc_child, out_file)
+            dc_child = cleanup(dc_child.child, out_file)
             print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
-            print_eg_tree(dc_child.child)
-            return eg_cons(dc_child.child, out_file)
+            print_eg_tree(dc_child)
+            return eg_cons(dc_child, out_file)
         else:
             dc_child_left = node_of_cut_to_add(to_reduce.child.left)
             dc_child_left = iterate(dc_child_left, blob)
-            dc_child_left = cleanup(dc_child_left, out_file)
+            dc_child_left = cleanup(dc_child_left.child, out_file)
 
             # Can stop early if an empty cut is found
-            if isinstance(eg_cons(dc_child_left.child, out_file), EGEmptyCut):
+            if isinstance(eg_cons(dc_child_left, out_file), EGEmptyCut):
                 return EGEmptyCut()
 
             dc_child_right = node_of_cut_to_add(to_reduce.child.right)
             dc_child_right = iterate(dc_child_right, blob)
-            dc_child_right = cleanup(dc_child_right, out_file)
+            dc_child_right = cleanup(dc_child_right.child, out_file)
             print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
-            print_eg_tree(dc_child_right.child)
-            return eg_cons(dc_child_right.child, out_file)
+            print_eg_tree(dc_child_right)
+            return eg_cons(dc_child_right, out_file)
     else:
+        print eg_tree
         print_eg_tree(eg_tree)
         sys.exit("Incorrectly formatted tree for eg_cons!")
 
