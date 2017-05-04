@@ -357,11 +357,16 @@ def remove_empty_cuts(tree, out_file):
 # Helper function - clean up any double cuts and empty cuts
 def cleanup(tree, out_file):
     # First clean up double cuts from the entire tree
+    print "CLEANUP: THIS IS THE TREE"
+    print_eg_tree(tree)
     update_tree = remove_dc_from_tree(tree, out_file)
+    print "CLEANUP: REMOVED DOUBLE CUTS"
+    print_eg_tree(update_tree)
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
-    update_tree = remove_empty_cuts(update_tree, out_file)
+    # update_tree = remove_empty_cuts(update_tree, out_file)
+    # print "CLEANUP: REMOVED EMPTY"
 
     return update_tree
 
@@ -513,7 +518,7 @@ def eg_cons(eg_tree, out_file):
                     else:
                         print "should be asesrting 0 next: ", potential_literal
                         assert(0)
-                        
+
 
                 if no_literal_found:
                     print_eg_tree(eg_tree)
@@ -539,12 +544,12 @@ def eg_cons(eg_tree, out_file):
                 print "No more literals:"
                 print_eg_tree(new_blob)
                 new_blob = EGNegation(new_blob)
-                # print "Re-negated no more literals tree"
-                # print_eg_tree(new_blob)
+                print "Re-negated no more literals tree"
+                print_eg_tree(new_blob)
                 new_blob = cleanup(new_blob, out_file)
                 # eg_tree.child.replace_child(new_blob, 1) // isgnored because not sure of strcture
-                print "EG CONS CASE 3: THIS IS LITERAL"
-                print_eg_tree(literal)
+                # print "EG CONS CASE 3: THIS IS LITERAL"
+                # print_eg_tree(literal)
                 print "EG CONS CASE 3: THIS IS THE NEW BLOB"
                 print_eg_tree(new_blob)
                 return eg_cons(new_blob, out_file)
