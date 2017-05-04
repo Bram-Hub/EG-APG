@@ -41,12 +41,8 @@ def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
         # print "THIS IS THE NEW CHILDREN"
         # print new_children
         temp = EGAnd(len(new_children), new_children)
-<<<<<<< HEAD
-        # print_eg_tree(temp)
-=======
         print "this is what removing the inside of the neg literal replaced with emty cut looks like:"
         print_eg_tree(temp)
->>>>>>> 9ba0b4dc1b1847d28b93489ee538fda898651886
         # return EGAnd(len(new_children), new_children)
         return temp
     # Case B: Everything else Case
@@ -504,7 +500,7 @@ def eg_cons(eg_tree, out_file):
             else:
                 print_eg_tree(eg_tree)
                 sys.exit("Not enough children for this case for eg_cons!")
-                
+
             no_literal_found = False
             literal = None
             list_of_blob = []
