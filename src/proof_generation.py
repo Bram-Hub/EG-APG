@@ -551,7 +551,7 @@ def eg_cons(eg_tree, out_file):
             elif isinstance(potential_literal, EGAtom):
                 if no_literal_found == False:
                     literal = potential_literal
-                    # no_literal_found = True
+                    no_literal_found = True
                 else:
                     list_of_blob.append(potential_literal)
             elif potential_literal == None:
@@ -562,7 +562,7 @@ def eg_cons(eg_tree, out_file):
                         isinstance(potential_literal.child.child, EGAtom)):
                     if no_literal_found == False:
                         literal = potential_literal
-                        # no_literal_found = True
+                        no_literal_found = True
                     else:
                         list_of_blob.append(potential_literal)
                 else:
@@ -573,7 +573,7 @@ def eg_cons(eg_tree, out_file):
                 print "should be asesrting 0 next: ", potential_literal
                 assert(0)
 
-        if no_literal_found:
+        if not no_literal_found:
             print_eg_tree(eg_tree)
             sys.exit("Missing a literal for this case for eg_cons!")
 
@@ -583,7 +583,7 @@ def eg_cons(eg_tree, out_file):
 
         print "Removing literal from the blob:"
         print_eg_tree(literal)
-        print "EG CONS CASE 3: THIS IS OLD BLOB"
+        print "EG CONS CASE 3: THIS IS the blob BLOB"
         print_eg_tree(blob)
 
         assert(blob.num_children > 0)
