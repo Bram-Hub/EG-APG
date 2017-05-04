@@ -357,8 +357,8 @@ def eg_cons(eg_tree, out_file):
     # Can ignore whether or not we have sheet of assignment - the root should be considered an EGEmptyCut or EGNegation with 0 children
     elif isinstance(eg_tree, EGEmptyCut) or \
         (isinstance(eg_tree, EGNegation) and eg_tree.child == None):
-        # print "EG_CONS: In case 2. This is the tree: "
-        # print_eg_tree(eg_tree)
+        print "EG_CONS: In case 2. This is the tree: "
+        print_eg_tree(eg_tree)
         return EGEmptyCut()
     # Case if left with a negation of an and with a literal and a blob of stuff
     # Remove the literal from the blob and call eg_cons on it after clean up
@@ -407,8 +407,8 @@ def eg_cons(eg_tree, out_file):
     # Should assume that theres always some kind of AND at the base of every SA
     elif (isinstance(eg_tree, SheetAssignment) and eg_tree.num_children == 1 and isinstance(eg_tree.children[0], EGAnd)) \
         or (isinstance(eg_tree, EGAnd) and eg_tree.num_children >= 2):
-        # print "EG_CONS: In case 4.  Current tree:"
-        # print_eg_tree(eg_tree)
+        print "EG_CONS: In case 4.  Current tree:"
+        print_eg_tree(eg_tree)
         if isinstance(eg_tree, SheetAssignment):
             new_root = eg_tree.children[0] # Should be EGAnd
         elif isinstance(eg_tree, EGAnd):
@@ -462,6 +462,8 @@ def eg_cons(eg_tree, out_file):
 
         # And everything else together to make a blob
         blob = EGAnd(len(list_of_blob), list_of_blob)
+        print "EG CONS CASE 4: THIS IS THE BLOB"
+        print_eg_tree(blob)
 
         assert(blob.num_children > 0)
         assert(to_reduce != None)
@@ -475,11 +477,15 @@ def eg_cons(eg_tree, out_file):
                 # Second iterate the blob into the outer child
                 dc_child = iterate(dc_child, blob)
                 dc_child = cleanup(dc_child, out_file)
+                print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
+                print_eg_tree(dc_child)
                 return eg_cons(dc_child, out_file)
         elif isinstance(to_reduce.child, EGAtom) or isinstance(to_reduce.child, EGEmptyCut):
             dc_child = node_of_cut_to_add(to_reduce.child)
             dc_child = iterate(dc_child, blob)
             dc_child = cleanup(dc_child, out_file)
+            print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
+            print_eg_tree(dc_child)
             return eg_cons(dc_child, out_file)
         else:
             dc_child_left = node_of_cut_to_add(to_reduce.child.left)
@@ -493,6 +499,8 @@ def eg_cons(eg_tree, out_file):
             dc_child_right = node_of_cut_to_add(to_reduce.child.right)
             dc_child_right = iterate(dc_child_right, blob)
             dc_child_right = cleanup(dc_child_right, out_file)
+            print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
+            print_eg_tree(dc_child)
             return eg_cons(dc_child_right, out_file)
     else:
         print_eg_tree(eg_tree)
