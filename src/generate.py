@@ -50,12 +50,12 @@ def parse(logic_statement):
   # new_tree = iterate(eg_tree.children[0].children[1], eg_tree.children[0].children[0])
   # print_eg_tree(new_tree)
 
-if len(sys.argv) < 3:
-    print "invalid command. please enter \"python generate.py premise.txt goal.txt [-o outputfilename]\""
+if len(sys.argv) < 2:
+    print "invalid command. please enter \"python generate.py premise.txt [-g goal.txt] [-o outputfilename]\""
     exit(1)
 
 premise_text_file = sys.argv[1] #raw_input("Enter premises textfile name (ex. premise.txt):")
-goal_text_file = sys.argv[2] #raw_input("Enter goal textfile name (ex. goal.txt):")
+goal_text_file = premise_text_file[:-4] + "_goal.txt" #raw_input("Enter goal textfile name (ex. goal.txt):")
 
 # Create the output file 
 out_file = open('output.pega', 'w')
@@ -64,10 +64,15 @@ for i, a in enumerate(sys.argv):
     assert (i+1 < len(sys.argv))
     outputfilename = sys.argv[i+1]
     out_file = open(outputfilename+'.pega', 'w')
+  elif a == "-g":
+    assert (i+1 < len(sys.argv))
+    goal_text_file = sys.argv[i+1]
+
 
 
 
 path = "../testcases/"
+# path = ""
 
 premise_trees = []
 

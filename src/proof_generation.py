@@ -32,6 +32,7 @@ def remove_literal(literal, tree, out_file):
     # Case A: when literal is a negation
     if isinstance(literal, EGNegation):
         #asser that the literal is a literal (the negation should have an atom as a child)
+        print "unioeqefdsf", literal.child
         assert (isinstance(literal.child, EGAtom))
         # Hack to move complement of atom to the end of the list of children
         # print "DON'T WANT COMPLEMENT"
@@ -432,13 +433,9 @@ def eg_cons(eg_tree, out_file):
                         else:
                             list_of_blob.append(potential_literal)
                     else:
-                        print potential_literal
+                        print "should be asesrting 0 next: ", potential_literal
                         assert(0)
-                        if no_literal_found == False:
-                            literal = potential_literal
-                            # no_literal_found = True
-                        else:
-                            list_of_blob.append(potential_literal)
+                        
 
                 if no_literal_found:
                     print_eg_tree(eg_tree)
