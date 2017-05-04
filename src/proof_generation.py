@@ -452,6 +452,7 @@ def figure_out_if_we_should_do_case_3(tree):
         for child in better_root.children:
             if isinstance(child, EGAtom) or (isinstance(child, EGNegation) and isinstance(child.child, EGAtom)):
                 print "************** ******************* ************* **********GOT A CASE 3"
+                print_eg_tree(child)
                 return True
     return False
 
@@ -494,6 +495,8 @@ def eg_cons(eg_tree, out_file):
                     better_root = previous
 
                 things_to_work_with = better_root
+                print "FOUND THE THINGS TO WORK WITH: "
+                print_eg_tree(things_to_work_with)
 
             elif old_child.child.num_children >= 2:
                 things_to_work_with = old_child.child
