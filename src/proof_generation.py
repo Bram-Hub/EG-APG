@@ -397,6 +397,7 @@ def eg_cons(eg_tree, out_file):
 
                                 # The left side of a biconditional should always be an implication
                                 literal = potential_literal.left
+                                no_literal_found = True
                                 list_of_blob.append(potential_literal.right)
                             else:
                                 assert (isinstance(potential_literal.right, EGAtom) or \
@@ -405,6 +406,7 @@ def eg_cons(eg_tree, out_file):
 
                                 # The right side of a biconditional should always be an implication
                                 literal = potential_literal.right
+                                no_literal_found = True
                                 list_of_blob.append(potential_literal.left)
 
                         else:
@@ -413,6 +415,7 @@ def eg_cons(eg_tree, out_file):
                     elif isinstance(potential_literal, EGAtom):
                         if no_literal_found == False:
                             literal = potential_literal
+                            # no_literal_found = True
                         else:
                             list_of_blob.append(potential_literal)
                     elif potential_literal == None:
@@ -423,6 +426,7 @@ def eg_cons(eg_tree, out_file):
                                 isinstance(potential_literal.child.child, EGAtom)):
                             if no_literal_found == False:
                                 literal = potential_literal
+                                # no_literal_found = True
                             else:
                                 list_of_blob.append(potential_literal)
                         else:
@@ -432,6 +436,7 @@ def eg_cons(eg_tree, out_file):
                         assert(0)
                         if no_literal_found == False:
                             literal = potential_literal
+                            # no_literal_found = True
                         else:
                             list_of_blob.append(potential_literal)
 
