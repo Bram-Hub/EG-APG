@@ -52,7 +52,8 @@ class SheetAssignment(EGStatement):
     def to_string_tree(self):
         my_str = ""
         for i in range(0, self.num_children):
-            my_str += self.children[i].to_string_tree()
+            if self.children[i] != None:
+                my_str += self.children[i].to_string_tree()
         return my_str
 
 # An atom in the EG tree that only has a value that is a starting
@@ -174,8 +175,10 @@ class EGOr(EGStatement):
     def to_string_tree(self):
         my_str = ""
         my_str += "("
-        my_str += self.left.to_string_tree()
-        my_str += self.right.to_string_tree()
+        if self.left != None:
+            my_str += self.left.to_string_tree()
+        if self.right != None:
+            my_str += self.right.to_string_tree()
         my_str += ")"
         return my_str
 
@@ -212,8 +215,10 @@ class EGImp(EGStatement):
     def to_string_tree(self):
         my_str = ""
         my_str += "("
-        my_str += self.right.to_string_tree()
-        my_str += self.left.to_string_tree()
+        if self.right != None:
+            my_str += self.right.to_string_tree()
+        if self.left != None:
+            my_str += self.left.to_string_tree()
         my_str += ")"
         return my_str
 
@@ -248,8 +253,11 @@ class EGBicon(EGStatement):
 
     def to_string_tree(self):
         my_str = ""
-        my_str += self.left.to_string_tree()
-        my_str += self.right.to_string_tree()
+        if self.left != None:
+            my_str += self.left.to_string_tree()
+        if self.right != None:
+            my_str += self.right.to_string_tree()
+        return my_str
 
 # Takes a "standard-squashed" tree and converts it into an existential graph
 # tree.  Returns the stack - need to add SA root outside
