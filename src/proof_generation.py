@@ -697,6 +697,9 @@ def find_proof(premises, goal, out_file):
 
     # Run consistency algorithm to determine proof
     inner_SA = cleanup(inner_SA, out_file)
+    print "THIS IS INNER SA:"
+    print_eg_tree(inner_SA)
+    print_tree_pegasus_style(inner_SA)
     cons_tree = eg_cons(inner_SA, out_file)
 
     print "Completed eg_cons... Here is the tree:"
