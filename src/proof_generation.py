@@ -430,13 +430,29 @@ def setup(premises, goal, out_file):
 
     return premises
 
+# boolean function that tells you if we should do case 3.
+def figure_out_if_we_should_do_case_3(tree):
+    # Skip all the ANDs to the last ones
+    previous = None
+    better_root = tree
+    while isinstance(better_root, EGAnd) and better_root.num_children == 1:
+        previous = better_root
+        better_root = better_root.children[0]
+    if previous != None:
+        better_root = previous
 
+    if isinstance(better_root, EGAnd):
+        for child in better_root.children:
+            if isinstance(child, EGAtom) or (isinstance(child, EGNegation) and isinstance(child.child, EGAtom)):
+                print "************** ******************* ************* **********GOT A CASE 3"
+                return True
+    return False
 
 # Consistency checker - evaluates if all the given premises and complement of the
 # goal are consistent with one another -> will also generate the proof in the
 # output file that can be loaded into Pegasus
 def eg_cons(eg_tree, out_file):
-    # do_case_3 = figure_out_if_we_should_do_case_3()
+    do_case_3 = figure_out_if_we_should_do_case_3(eg_tree)
     # Assumption of program (for now) is that the proof provided is valid
     # If after clean up, None is returned then that means the premises and goal
     # aren't consistent
@@ -455,7 +471,7 @@ def eg_cons(eg_tree, out_file):
     # Remove the literal from the blob and call eg_cons on it after clean up
     # If not in this structure, then assumed that something went wrong, and program terminates
     # DEBUG THIS CASE - ONLY CONSIDER ATOMS NOT NEGATION OF ATOMS
-    elif isinstance(eg_tree, EGNegation) and isinstance(eg_tree.child, EGAnd):
+    elif (isinstance(eg_tree, EGNegation) and isinstance(eg_tree.child, EGAnd)) or do_case_3:
         print "EG_CONS: In case 3.  This is the tree: "
         print_eg_tree(eg_tree)
         old_child = eg_tree
@@ -694,6 +710,7 @@ def find_proof(premises, goal, out_file):
 
     print "This is the subtree used for consisency checking:"
     print_eg_tree(inner_SA)
+    print_tree_pegasus_style(inner_SA)
 
     # Run consistency algorithm to determine proof
     inner_SA = cleanup(inner_SA, out_file)
