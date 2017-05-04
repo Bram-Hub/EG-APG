@@ -6,6 +6,7 @@ import sys
 
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
+    assert( isinstance(literal, EGAtom) )
 # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ###
 # Cases that need to be considered:
 #         EGAtom, EGNegation, SheetAssignment, EGEmptyCut, **EGAnd**
@@ -132,8 +133,8 @@ def remove_literal(literal, tree, out_file):
                     isinstance(tree, EGImp) or \
                     isinstance(tree, EGBicon))
             # grab the left and right child after remove literal on them
-            left_child = remove_literal(tree.left, out_file)
-            right_child = remove_literal(tree.right, out_file)
+            left_child = remove_literal(literal, tree.left, out_file)
+            right_child = remove_literal(literal, tree.right, out_file)
             # Automatically convert representation to a negation of an AND
             # Only make it a chile, if it isn't None
             if left_child != None:
