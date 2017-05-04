@@ -34,6 +34,10 @@ def remove_literal(literal, tree, out_file):
     if isinstance(literal, EGNegation):
         #asser that the literal is a literal (the negation should have an atom as a child)
         print "unioeqefdsf", literal.child
+        print "THIS IS THE TREE:"
+        print_eg_tree(tree)
+        print "THIS IS THE CURRENT LITERAL:"
+        print_eg_tree(literal)
         assert (isinstance(literal.child, EGAtom))
         # Hack to move complement of atom to the end of the list of children
         # print "DON'T WANT COMPLEMENT"
@@ -423,11 +427,12 @@ def eg_cons(eg_tree, out_file):
                     elif potential_literal == None:
                         pass
                     elif isinstance(potential_literal, EGNegation):
-                        if isinstance(potential_literal.child, EGAtom) or \
-                                (isinstance(potential_literal.child, EGNegation) and \
-                                isinstance(potential_literal.child.child, EGAtom)):
+                        print "HERE"
+                        if isinstance(potential_literal.child, EGAtom):
                             if no_literal_found == False:
                                 literal = potential_literal
+                                print "EG CONS CASE 3: THIS IS THE NEW LITERAL:"
+                                print_eg_tree(literal)
                                 # no_literal_found = True
                             else:
                                 list_of_blob.append(potential_literal)
@@ -436,7 +441,7 @@ def eg_cons(eg_tree, out_file):
                     else:
                         print "should be asesrting 0 next: ", potential_literal
                         assert(0)
-                        
+
 
                 if no_literal_found:
                     print_eg_tree(eg_tree)
@@ -454,8 +459,8 @@ def eg_cons(eg_tree, out_file):
 
                 # Located the literal and the blob
 
-                # print "Removing literal from the blob:"
-                # print_eg_tree(literal)
+                print "Removing this literal from the blob:"
+                print_eg_tree(literal)
                 # ++ if (literal == None):
 
                 new_blob = remove_literal(literal, blob, out_file)
