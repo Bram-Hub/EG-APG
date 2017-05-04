@@ -1,11 +1,18 @@
 # ExistentialGraphProofGenerator
-Generates Existential Graph Proofs from set of premises to a goal.
+Automatedly generates Existential Graph Proofs from set of premises and a goal provided in propositional logic format.  Implements the [idea](http://www.cogsci.rpi.edu/~heuveb/Research/EG/details.html "EG Technical Details")  proposed by Bran van Heuveln in his Computability and Logic course at RPI. At the moment, the algorithm only handles valid arguments (does not prove invalidity directly) and has a method of outputting to terminal and an output file.  Future work will include handling Pegasus output which is another software developed by an RPI student that visualizes an existential graph proof.
 
-Assumptions: We are given a valid argument.
+## How to run the tool
+In terminal and in the project folder, run:
 
-Input: (1) premises & goal textfile
+`cd src`
 
-  textfiles are formatted as such:
+`python generate.py <premise.txt> <goal.txt> -o <output-file.pega>`
+
+premises.txt and goal.txt should contain well-formed logic statement (add parentheses around "NOT" and compound statements).
+
+The majority of the terminal output is separated by "phases" in the algorithm from conversion to setup to consistency checking.  Intermediary trees will be displayed in a sideways format.  From top down, the tree goes from left to right.
+
+## Grammar
 
     atoms are '[a-zA-Z]''
     not is '~''
@@ -18,39 +25,23 @@ Input: (1) premises & goal textfile
     right parenthesis is ')'
     and the goal is prepended by '$'
 
-  ex: premises_example.txt:       
-          `p & q
-          r | s`
+## Example
+  modus_ponens.txt:
+  
+      p-q
+      p
 
-  ex: goal_example.txt:
-          `p`
-
-## To Do
-- Parse premise & goal textfile into lex and yacc readable sentence (and feed to parse_sentence in parese_tree.py) (write this in python... Sam)
-- Use lex and yacc to parse and represent the statements are trees
-- Convert trees into existential graph format (write this in python... Beverly)
-  - existential graph format is:
-    - "()" to represent a cut
-    - strings to represent atoms
-    - create existential graph rules systematically (write up rules python then use lex & yacc to parse logic statement & the rule that you're writing [in rules.py]) [talk about this more...]
+  goal_example.txt:
+      ```q```
 
 ## Pegasus format
-Currently each line in Pegasus starts off with an action and two states: the start and end states.
-atoms : A...Z...0...9
-cuts: ()
-end of atom : |
-[-] : stuff in between brackets to be removed
-[+] : stuff in between brackets to be added
-[/] : keep everything in between these brackets
-[.] : notifies where the iteration is coming from
+Currently each line in Pegasus starts off with an action and two states: the start and end states.  Right now only pseudo-Pegasus output works.  That format is outputed to an output file that is either provided through command line or defaults to ```output.pega```.
 
-## Test
-In terminal, run:
+    atoms : A...Z...0...9
+    cuts: ()
+    end of atom : |
+    [-] : stuff in between brackets to be removed
+    [+] : stuff in between brackets to be added
+    [/] : keep everything in between these brackets
+    [.] : notifies where the iteration is coming from
 
-`cd src`
-
-`python generate.py <premise.txt> <goal.txt>`
-
-premises.txt and goal.txt should contain well-formed logic statement (recommended to not put in spaces).
-
-Two trees will be printed for each premise and goal if you correctly put in a well-formed logic statement.  The first tree is a binary tree of the original statement, and the second tree is "squashed" tree where only "ANDs" are allowed to have multiple children.
