@@ -4,9 +4,82 @@ from existential_statement import *
 from rules import *
 import sys
 
+def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file):
+    assert ( isinstance(literal, EGNegation) and isinstance(literal.child, EGAtom) )
+
+    if isinstance(tree, EGEmptyCut) or tree == None:
+        return tree
+    # Case B: Base Case 2
+    elif isinstance(tree, EGAtom):
+        # print "GOT TO ATOM"
+        if compare_EG_trees(tree, literal.child):
+            # print "COMPARE TRUE"
+            return EGEmptyCut()
+    # Case B: Base Case 3
+    elif isinstance(tree, EGNegation):
+        # print "SHOULD BE HERE"
+        # print_eg_tree(tree)
+        only_child = remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree.child, out_file)
+        if only_child == None:
+            # print "RETURNING EMPTY CUT"
+            return EGEmptyCut()
+        else:
+            return EGNegation(only_child)
+    # Case B: Base Case 4
+    elif isinstance(tree, SheetAssignment) or isinstance(tree, EGAnd):
+        # print "gotem"
+        new_children = []
+        # for each child, apply remove_inside_of_neg_literal_replace_with_empty_cut recursively
+        for i in range(0, tree.num_children):
+            new_child = remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree.children[i], out_file)
+
+            # print "THIS IS THE NEW CHILD"
+            # print_eg_tree(new_child)
+            if new_child != None:
+                # print "adding new kid: ", new_child
+                new_children.append(new_child)
+        # print "THIS IS THE NEW CHILDREN"
+        # print new_children
+        temp = EGAnd(len(new_children), new_children)
+        print_eg_tree(temp)
+        # return EGAnd(len(new_children), new_children)
+        return temp
+    # Case B: Everything else Case
+    else:
+        print "everything else!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        if not (isinstance(tree, EGOr) or \
+            isinstance(tree, EGImp) or \
+            isinstance(tree, EGBicon)):
+            print type(tree)
+        else:
+            # if not catched above, the tree must be an Or, Implication or Biconditional
+            assert( isinstance(tree, EGOr) or \
+                isinstance(tree, EGImp) or \
+                isinstance(tree, EGBicon))
+        # grab the left and right child after remove literal on them
+        left_child = remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree.left, out_file)
+        right_child = remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree.right, out_file)
+        # Automatically convert representation to a negation of an AND
+        # Only make it a chile, if it isn't None
+        if left_child != None:
+            old_children.append(left_child)
+        if right_child != None:
+            old_children.append(right_child)
+        new_child = EGAnd(len(old_children), old_children)
+        tree = EGNegation(new_child)
+    return tree
+
+
+
+
+####################################################################################################################################
+####################################################################################################################################
+
+
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
-    assert( isinstance(literal, EGAtom) )
+    print_eg_tree(literal)
+    assert( isinstance(literal, EGAtom) or (isinstance(literal, EGNegation) and isinstance(literal.child, EGAtom) ) )
 # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ### # ###
 # Cases that need to be considered:
 #         EGAtom, EGNegation, SheetAssignment, EGEmptyCut, **EGAnd**
@@ -34,20 +107,22 @@ def remove_literal(literal, tree, out_file):
     if isinstance(literal, EGNegation):
         #asser that the literal is a literal (the negation should have an atom as a child)
         print "unioeqefdsf", literal.child
-        print "THIS IS THE TREE:"
-        print_eg_tree(tree)
-        print "THIS IS THE CURRENT LITERAL:"
-        print_eg_tree(literal)
         assert (isinstance(literal.child, EGAtom))
         # Hack to move complement of atom to the end of the list of children
         # print "DON'T WANT COMPLEMENT"
         # print_eg_tree(tree)
-        new_literal = tree.children[0]
-        tree.remove_child(0)
-        tree.add_children(literal)
-        # print "MOVED TO END"
-        # print_eg_tree(tree)
-        tree = remove_literal(new_literal, tree, out_file)
+
+        tree = remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
+
+        # new_literal = tree.children[0]
+        # print "new literallllll: ", new_literal
+        # print "len: ", len(new_literal.child.children)
+        # print "new literalllll's child's child: ", new_literal.child.children[0]
+        # tree.remove_child(0)
+        # tree.add_children(literal)
+        # # print "MOVED TO END"
+        # # print_eg_tree(tree)
+        # tree = remove_literal(new_literal, tree, out_file)
 
         # Case A: Base Case 1
         # if isinstance(tree, EGAtom) or isinstance(tree, EGEmptyCut):
@@ -127,6 +202,7 @@ def remove_literal(literal, tree, out_file):
             return temp
         # Case B: Everything else Case
         else:
+            print "everything else!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             if not (isinstance(tree, EGOr) or \
                 isinstance(tree, EGImp) or \
                 isinstance(tree, EGBicon)):
@@ -349,10 +425,13 @@ def setup(premises, goal, out_file):
 
     return premises
 
+
+
 # Consistency checker - evaluates if all the given premises and complement of the
 # goal are consistent with one another -> will also generate the proof in the
 # output file that can be loaded into Pegasus
 def eg_cons(eg_tree, out_file):
+    # do_case_3 = figure_out_if_we_should_do_case_3()
     # Assumption of program (for now) is that the proof provided is valid
     # If after clean up, None is returned then that means the premises and goal
     # aren't consistent
@@ -427,12 +506,11 @@ def eg_cons(eg_tree, out_file):
                     elif potential_literal == None:
                         pass
                     elif isinstance(potential_literal, EGNegation):
-                        print "HERE"
-                        if isinstance(potential_literal.child, EGAtom):
+                        if isinstance(potential_literal.child, EGAtom) or \
+                                (isinstance(potential_literal.child, EGNegation) and \
+                                isinstance(potential_literal.child.child, EGAtom)):
                             if no_literal_found == False:
                                 literal = potential_literal
-                                print "EG CONS CASE 3: THIS IS THE NEW LITERAL:"
-                                print_eg_tree(literal)
                                 # no_literal_found = True
                             else:
                                 list_of_blob.append(potential_literal)
@@ -441,7 +519,7 @@ def eg_cons(eg_tree, out_file):
                     else:
                         print "should be asesrting 0 next: ", potential_literal
                         assert(0)
-
+                        
 
                 if no_literal_found:
                     print_eg_tree(eg_tree)
@@ -459,22 +537,22 @@ def eg_cons(eg_tree, out_file):
 
                 # Located the literal and the blob
 
-                print "Removing this literal from the blob:"
-                print_eg_tree(literal)
+                # print "Removing literal from the blob:"
+                # print_eg_tree(literal)
                 # ++ if (literal == None):
 
                 new_blob = remove_literal(literal, blob, out_file)
-                # print "No more literals:"
-                # print_eg_tree(new_blob)
+                print "No more literals:"
+                print_eg_tree(new_blob)
                 new_blob = EGNegation(new_blob)
                 # print "Re-negated no more literals tree"
                 # print_eg_tree(new_blob)
                 new_blob = cleanup(new_blob, out_file)
                 # eg_tree.child.replace_child(new_blob, 1) // isgnored because not sure of strcture
-                # print "EG CONS CASE 3: THIS IS LITERAL"
-                # print_eg_tree(literal)
-                # print "EG CONS CASE 3: THIS IS THE NEW BLOB"
-                # print_eg_tree(new_blob)
+                print "EG CONS CASE 3: THIS IS LITERAL"
+                print_eg_tree(literal)
+                print "EG CONS CASE 3: THIS IS THE NEW BLOB"
+                print_eg_tree(new_blob)
                 return eg_cons(new_blob, out_file)
             else:
                 print_eg_tree(eg_tree)
