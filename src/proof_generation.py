@@ -387,27 +387,21 @@ def eg_cons(eg_tree, out_file):
                         for j in range(0, potential_literal.num_children):
                             if potential_literal.children[j] == None:
                                 pass
-                            if isinstance(potential_literal, EGAtom) or \
-                                    (isinstance(potential_literal, EGNegation) and \
-                                    isinstance(potential_literal.child, EGAtom)):
+                            if isinstance(potential_literal, EGAtom):
                                 literal = potential_literal.children[j]
                                 no_literal_found = True
                             else:
                                 list_of_blob.append(potential_literal.children[j])
                     elif isinstance(potential_literal, EGBicon) or isinstance(potential_literal, EGImp) or isinstance(potential_literal, EGOr):
                         if no_literal_found == False:
-                            if isinstance(potential_literal.left, EGAtom) or \
-                                (isinstance(potential_literal.left, EGNegation) and \
-                                isinstance(potential_literal.left.child, EGAtom)):
+                            if isinstance(potential_literal.left, EGAtom):
 
                                 # The left side of a biconditional should always be an implication
                                 literal = potential_literal.left
                                 no_literal_found = True
                                 list_of_blob.append(potential_literal.right)
                             else:
-                                assert (isinstance(potential_literal.right, EGAtom) or \
-                                (isinstance(potential_literal.right, EGNegation) and \
-                                isinstance(potential_literal.right.child, EGAtom)))
+                                assert (isinstance(potential_literal.right, EGAtom))
 
                                 # The right side of a biconditional should always be an implication
                                 literal = potential_literal.right
@@ -477,7 +471,7 @@ def eg_cons(eg_tree, out_file):
                 return eg_cons(new_blob, out_file)
             else:
                 print_eg_tree(eg_tree)
-                sys.exit("Too many children for this case for eg_cons!")
+                sys.exit("Not enough children for this case for eg_cons!")
         else:
                 print_eg_tree(eg_tree)
                 sys.exit("Incorrectly formatted tree for the 3rd case in eg_cons!")
