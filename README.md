@@ -6,7 +6,9 @@ In terminal and in the project folder, run:
 
 `cd src`
 
-`python generate.py <premise.txt> <goal.txt> -o <output-file.pega>`
+`python generate.py ../testcases/<premise.txt> [-g <goal.txt>] [-o <output-file.pega>]`
+
+All premises and goal files should be placed in the testcases folder.  If you decide to name your goal file as `premise_goal.txt`, then you do not need to include the -g flag.  Otherwise, include the -g flag and the text file that represents your goal.  If you would like to specify an output file, include the -o flag with a file that has the .pega extension.
 
 premises.txt and goal.txt should contain well-formed logic statement (add parentheses around "NOT" and compound statements).
 
