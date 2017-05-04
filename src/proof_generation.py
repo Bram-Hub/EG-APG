@@ -41,7 +41,7 @@ def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
         # print "THIS IS THE NEW CHILDREN"
         # print new_children
         temp = EGAnd(len(new_children), new_children)
-        print_eg_tree(temp)
+        # print_eg_tree(temp)
         # return EGAnd(len(new_children), new_children)
         return temp
     # Case B: Everything else Case
@@ -639,30 +639,30 @@ def eg_cons(eg_tree, out_file):
                 dc_child = iterate(dc_child, blob)
                 dc_child = cleanup(dc_child, out_file)
                 print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
-                print_eg_tree(dc_child)
-                return eg_cons(dc_child, out_file)
+                print_eg_tree(dc_child.child)
+                return eg_cons(dc_child.child, out_file)
         elif isinstance(to_reduce.child, EGAtom) or isinstance(to_reduce.child, EGEmptyCut):
             dc_child = node_of_cut_to_add(to_reduce.child)
             dc_child = iterate(dc_child, blob)
             dc_child = cleanup(dc_child, out_file)
             print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
-            print_eg_tree(dc_child)
-            return eg_cons(dc_child, out_file)
+            print_eg_tree(dc_child.child)
+            return eg_cons(dc_child.child, out_file)
         else:
             dc_child_left = node_of_cut_to_add(to_reduce.child.left)
             dc_child_left = iterate(dc_child_left, blob)
             dc_child_left = cleanup(dc_child_left, out_file)
 
             # Can stop early if an empty cut is found
-            if isinstance(eg_cons(dc_child_left, out_file), EGEmptyCut):
+            if isinstance(eg_cons(dc_child_left.child, out_file), EGEmptyCut):
                 return EGEmptyCut()
 
             dc_child_right = node_of_cut_to_add(to_reduce.child.right)
             dc_child_right = iterate(dc_child_right, blob)
             dc_child_right = cleanup(dc_child_right, out_file)
             print "EG CONS CASE 4: THIS IS THE TREE BEFORE CALLING EG CONS"
-            print_eg_tree(dc_child)
-            return eg_cons(dc_child_right, out_file)
+            print_eg_tree(dc_child_right.child)
+            return eg_cons(dc_child_right.child, out_file)
     else:
         print_eg_tree(eg_tree)
         sys.exit("Incorrectly formatted tree for eg_cons!")
