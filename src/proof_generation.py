@@ -501,14 +501,11 @@ def eg_cons(eg_tree, out_file):
 # Main function for finding a proof with the given premises and goal
 # Takes in a tree of all the premises combined into a single eg tree and the
 # goal as an eg tree
-def find_proof(premises, goal):
+def find_proof(premises, goal, out_file):
     print
 
     before_tree = None
     after_tree = None
-    # Create the output file -> should make it an option that the user puts in
-    # the name of the file at the beginning
-    out_file = open('output.pega', 'w')
 
     print "Provided premises:"
     print_eg_tree(premises)
