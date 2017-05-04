@@ -365,7 +365,7 @@ def cleanup(tree, out_file):
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
-    # update_tree = remove_empty_cuts(update_tree, out_file)
+    update_tree = remove_empty_cuts(update_tree, out_file)
     # print "CLEANUP: REMOVED EMPTY"
 
     return update_tree
