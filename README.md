@@ -47,3 +47,5 @@ Currently each line in Pegasus starts off with an action and two states: the sta
     [/] : keep everything in between these brackets
     [.] : notifies where the iteration is coming from
 
+## Test Cases
+If you go into the testcases, you will see an assortment of potential test files.  The folder prop_logic contains problems from Professor van Heuveln's Propositional Logic worksheets.  While a lot of the problems do work, the system is still buggy, so please report any problems that should work that do not.
