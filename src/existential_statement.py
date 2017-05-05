@@ -1,8 +1,13 @@
+# Contains class structure for Existential Graphs as well as other useful class functions
+# such as printing the tree visually or copying the tree
+
 from statement import *
 from sys import stdout
 import re
-# import string
 
+# Base class of all types of Existential Graph statements
+# While should not be directly used, provides a bunch of base
+# functionality that all EG statements are expected to have
 class EGStatement(object):
     def __init__(self, value, num_children):
         self._value = value
@@ -305,6 +310,7 @@ def transform(tree, stack):
         assert False
     return stack
 
+# Makes a copy of the passed in existential graph tree
 def copy_tree(tree):
     # Base case
     if isinstance(tree, EGAtom):
@@ -342,6 +348,7 @@ def copy_tree(tree):
     else:
         sys.exit("Something went wrong when copying the tree! Exiting...")
 
+# Prints a sideways version of the existential graph tree
 def print_eg_tree(tree, level=0):
     if isinstance(tree, SheetAssignment):
         # print "level", level, ":", tree.value

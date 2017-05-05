@@ -70,13 +70,6 @@ def remove_inside_of_neg_literal_replace_with_empty_cut(literal, tree, out_file)
         tree = EGNegation(new_child)
     return tree
 
-
-
-
-####################################################################################################################################
-####################################################################################################################################
-
-
 # Helper function - removes any literal that matches the specified literal
 def remove_literal(literal, tree, out_file):
     # print "heres the literal"
@@ -297,6 +290,7 @@ def remove_dc_from_tree(tree, out_file):
 # Idea is that only the immediate parent of the empty cut gets removed (entire structure)
 # but that's it
 # Is the action considered a removal of a double cut or just an erase
+# THIS FUNCTION IS CURRENTLY NOT IN USE
 def remove_empty_cuts(tree, level, out_file):
     before_tree = copy_tree(tree)
     after_tree = copy_tree(tree)
@@ -381,6 +375,8 @@ def cleanup(tree, out_file):
 
     # Second look for empty cuts in a set of children and if at least one is found
     # then remove the parent and all of its children
+    # CURRENTLY: commented out because we handle empty cuts in other places but this
+    # function could be potentially rewritten to handle other cases
 
     # update_tree = remove_empty_cuts(update_tree, 0, out_file)
     # print "CLEANUP: REMOVED EMPTY CUTS"
@@ -448,7 +444,7 @@ def setup(premises, goal, out_file):
 
     return premises
 
-# boolean function that tells you if we should do case 3.
+# boolean function that tells you if we should do case 3 when there isn't a NOT-AND structure
 def figure_out_if_we_should_do_case_3(tree):
     # Skip all the ANDs to the last ones
     previous = None
