@@ -1,4 +1,10 @@
-# ExistentialGraphProofGenerator
+# EGPG
+## Authors
+2017:
+Beverly Sishobhon
+Samantha Lee
+
+## About
 Automatedly generates existential graph proofs from a set of premises and a goal provided in propositional logic format.  Implements the [idea](http://www.cogsci.rpi.edu/~heuveb/Research/EG/details.html "EG Technical Details")  proposed by Bran van Heuveln in his Computability and Logic course at RPI. At the moment, the algorithm only handles valid arguments (does not prove invalidity directly) and has a method of outputting to terminal and an output file.  Future work will include handling Pegasus output which is another software developed by an RPI student that visualizes an existential graph proof.
 
 ## How to run the tool
